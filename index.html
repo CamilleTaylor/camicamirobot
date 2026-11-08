@@ -438,8 +438,13 @@ button { font: inherit; color: inherit; }
 .wm-c { color: var(--gold); } /* the name inside running text: one color, easy to read */
 .bio .coda { margin-top: 30px !important; font-style: italic; font-size: clamp(21px, 2.2vw, 26px) !important; line-height: 1.35 !important; color: var(--bone) !important; }
 .bio .eyebrow { line-height: 1.6; }
-.contact { position: sticky; top: 110px; }
-@media (max-width: 760px) { .contact { position: static; } }
+.side { position: sticky; top: 110px; display: grid; gap: 34px; align-self: start; }
+@media (max-width: 760px) { .side { position: static; } }
+/* 2008 / now: two portraits side by side, cropped to the same frame */
+.then-now { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 360px; }
+.then-now div { display: grid; gap: 8px; min-width: 0; }
+.then-now img { width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 30%; border: 1px solid var(--line); background: var(--void-2); filter: saturate(0.9); }
+.then-now figcaption { font-family: var(--f-label); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
 @media (max-width: 560px) { .bio h2 .sep { display: none; } .bio h2 .wm { display: block; margin-top: 6px; } }
 .contact { display: grid; gap: 18px; font-family: var(--f-label); font-size: 13px; }
 .contact div { display: grid; gap: 4px; }
@@ -700,6 +705,12 @@ footer.alive { cursor: crosshair; touch-action: none; }
 .orb.orb-2 { left: auto; top: auto; right: max(28px, 14%); bottom: 34%; margin: 0; }
 .orb.orb-2 span { animation-duration: 9s; animation-delay: -5s; }
 @media (max-width: 760px) { .orb.orb-2 { right: 14px; bottom: 30px; } }
+/* the third orb waits in the footer and only shows once the network has grown */
+.orb.orb-3 { left: auto; right: 7%; top: 26%; margin: 0; opacity: 0; pointer-events: none; transition: opacity 2.4s ease, transform .5s cubic-bezier(.2, .7, .2, 1); }
+.orb.orb-3 span { animation-duration: 6.5s; animation-delay: -1s; }
+footer.grown .orb.orb-3 { opacity: 0.85; pointer-events: auto; }
+footer.grown .orb.orb-3:hover, footer.grown .orb.orb-3:focus-visible { opacity: 1; }
+@media (max-width: 560px) { .orb.orb-3 { right: 16px; top: 20%; } }
 .orb:hover span, .orb:focus-visible span { animation-play-state: paused; opacity: 1; background: #fff; }
 .orb:focus-visible { outline: 1px solid rgba(184, 77, 255, 0.8); outline-offset: 2px; }
 .vault {
@@ -820,6 +831,11 @@ footer.alive { cursor: crosshair; touch-action: none; }
         <p>Currently working amid the springs, forests, and wildlife of North Florida, Taylor continues to investigate the relationship between the observable and the imagined, creating work that invites curiosity rather than prescribing interpretation.</p>
         <p class="coda"><span class="wm-c">Camicamirobot</span> is an ongoing exploration of a strange and living world.</p>
       </div>
+      <div class="side">
+        <figure class="then-now" aria-label="Camille Taylor in 2008 and now">
+          <div><img src="https://birdswoon.wordpress.com/wp-content/uploads/2012/09/tumblr_mabqyii0up1rgc921o1_1280-e1794114845720.jpg?w=480" width="480" height="747" alt="Camille Taylor in 2008" loading="lazy" decoding="async"><figcaption>2008</figcaption></div>
+          <div><img src="camille-now.jpg" width="155" height="207" alt="Camille Taylor now" loading="lazy" decoding="async"><figcaption>now</figcaption></div>
+        </figure>
       <dl class="contact">
         <div>
           <dt>Follow the work in progress</dt>
@@ -831,6 +847,7 @@ footer.alive { cursor: crosshair; touch-action: none; }
           <dd><button class="copy" id="copy-email" type="button">Copy email</button></dd>
         </div>
       </dl>
+      </div>
     </div>
   </section>
 </main>
@@ -839,6 +856,7 @@ footer.alive { cursor: crosshair; touch-action: none; }
   <canvas id="lungs" aria-hidden="true"></canvas>
   <canvas id="sparks" aria-hidden="true"></canvas>
   <span class="footer-hint" id="footer-hint" aria-hidden="true"></span>
+  <button class="orb orb-3" id="orb-3" data-gallery="2" type="button" aria-label="A small glowing light"><span></span></button>
   <p>© <span id="year"></span> <span class="wm-p">camicami</span><span class="wm-t">robot</span></p>
 </footer>
 
@@ -908,6 +926,7 @@ const WORKS = [
    ring, the share pages and the sitemap.
    1st: the orb beside "Index of the collection"
    2nd: the orb below the contact details in the About section
+   3rd: the orb in the footer, which only appears once the footer has grown
    - name: shown at the top of the gallery ("" shows just "Hidden gallery")
    - title, year: optional, like the main list */
 const HIDDEN = [
@@ -941,6 +960,27 @@ const HIDDEN = [
       { title: "Untitled", year: "", src: WP + "2020/10/375f0-img_20190127_212008876.jpg" },
       { title: "Untitled", year: "", src: WP + "2020/10/be403-img_20190121_180819795.jpg" },
       { title: "Medusa", year: "", src: WP + "2020/10/66345-medusa.jpg" }
+    ]
+  },
+  {
+    name: "",
+    works: [
+      { title: "Wires", year: "", src: WP + "2015/07/wires4.jpg" },
+      { title: "Dead Cat", year: "", src: WP + "2015/07/dead-cat-014.jpg" },
+      { title: "Me, 2015", year: "", src: WP + "2014/05/me2015.png" },
+      { title: "Untitled", year: "", src: WP + "2015/09/bg2.jpg" },
+      { title: "Untitled", year: "", src: WP + "2016/04/20160423_104913.jpg" },
+      { title: "Untitled", year: "", src: WP + "2016/12/2016-02-01-17-41-01.jpg" },
+      { title: "Untitled", year: "", src: WP + "2017/06/background.jpg" },
+      { title: "Untitled (black and white)", year: "2012", src: WP + "2017/06/penis-b-w2012.jpg" },
+      { title: "Untitled", year: "", src: WP + "2017/07/20170703_194609.jpg" },
+      { title: "Untitled", year: "", src: WP + "2020/10/8e9e7-dsc_6813.jpg" },
+      { title: "Untitled", year: "", src: WP + "2020/10/7230c-20170512_172717.jpg" },
+      { title: "Untitled", year: "", src: WP + "2020/10/b9543-20170523_140832.jpg" },
+      { title: "Creep", year: "", src: WP + "2020/10/928e9-creep.jpg" },
+      { title: "Huge Lace", year: "", src: WP + "2020/10/bd74b-hugelace.jpg" },
+      { title: "Home", year: "", src: WP + "2020/10/fff1e-home-1.jpg" },
+      { title: "Untitled (panorama)", year: "", src: WP + "2020/10/ddc53-20170522_200449-pano.jpg" }
     ]
   }
 ];
@@ -1387,6 +1427,8 @@ function setGallery(g) {
   vG = g;
   const h = HIDDEN[g];
   document.getElementById("vault-name").textContent = h.name ? "Hidden gallery · " + h.name : "Hidden gallery";
+  vStrip.hidden = h.works.length < 2;
+  document.querySelector(".vault-nav").hidden = h.works.length < 2;
   vStrip.innerHTML = "";
   vThumbs = h.works.map((w, i) => {
     const b = document.createElement("button");
@@ -1447,7 +1489,10 @@ function closeVault(fromHistory) {
   if (vPushed) { vPushed = false; history.back(); }
   else history.replaceState(null, "", location.pathname + location.search);
 }
-orbs.forEach(o => o.addEventListener("click", () => openVault(Number(o.dataset.gallery) || 0, 0)));
+orbs.forEach(o => {
+  o.addEventListener("pointerdown", e => e.stopPropagation());
+  o.addEventListener("click", e => { e.stopPropagation(); openVault(Number(o.dataset.gallery) || 0, 0); });
+});
 document.getElementById("vault-close").addEventListener("click", () => closeVault());
 document.getElementById("vault-prev").addEventListener("click", () => showVault((vIndex - 1 + vWorks().length) % vWorks().length));
 document.getElementById("vault-next").addEventListener("click", () => showVault((vIndex + 1) % vWorks().length));
@@ -1981,7 +2026,7 @@ function drawLungsTo(front) {
 function growLungs() {
   if (lungStarted) return;
   lungStarted = true;
-  if (reduceMotion) { lungGrown = true; drawLungsTo(Infinity); return; }
+  if (reduceMotion) { lungGrown = true; drawLungsTo(Infinity); document.querySelector("footer").classList.add("grown"); return; }
   /* a growth front sweeps down from the top edge of the footer */
   const t0 = performance.now(), DUR = 3400;
   (function frame(now) {
@@ -1989,7 +2034,7 @@ function growLungs() {
     const eased = 1 - Math.pow(1 - p, 2.2);
     drawLungsTo(p === 1 ? Infinity : -8 + eased * (lungH + 16));
     if (p < 1) requestAnimationFrame(frame);
-    else { lungGrown = true; lv.classList.add("breathing"); kv.classList.add("breathing"); footerEl.classList.add("alive"); startSparks(); showFooterHint(); }
+    else { lungGrown = true; lv.classList.add("breathing"); kv.classList.add("breathing"); footerEl.classList.add("alive", "grown"); startSparks(); showFooterHint(); }
   })(t0);
 }
 /* ---------------- the footer comes alive ----------------
