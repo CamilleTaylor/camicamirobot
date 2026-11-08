@@ -1721,7 +1721,7 @@ document.addEventListener("pointerleave", () => { pointer.x = null; pointer.y = 
    a vessel tip and stops just short of it, where a dotted synapse crosses the
    gap. Where a cyan tip and a magenta tip nearly touch, a synapse joins them.
    Every stroke gets its own transparency and nothing is drawn solid. It grows
-   in once when the footer scrolls into view, then breathes, and now and then
+   in from the top edge once the footer scrolls into view, then breathes, and now and then
    a spark crosses a synapse. */
 const lv = document.getElementById("lungs");
 const lx = lv.getContext("2d");
@@ -1848,49 +1848,48 @@ function buildLungs() {
     }
   }
   lungMaxD = Math.max(lungMaxD, nerveD + 3);
-  lungSegs.sort((p, q) => p.d - q.d);
-  lungDrawn = 0;
-  if (lungGrown || reduceMotion) drawLungsTo(lungSegs.length, true);
-}
-function drawLungsTo(n, finish) {
-  lx.lineCap = "round";
-  for (; lungDrawn < n; lungDrawn++) {
-    const s = lungSegs[lungDrawn];
-    lx.strokeStyle = tint(s.c, s.alpha);
-    lx.shadowColor = tint(s.c, s.alpha * 0.5);
-    lx.shadowBlur = s.d < 3 ? 5 : 0;
-    lx.lineWidth = Math.max(0.35, s.wd);
-    lx.beginPath();
-    if (s.poly) { lx.moveTo(s.poly[0][0], s.poly[0][1]); for (let i = 1; i < s.poly.length; i++) lx.lineTo(s.poly[i][0], s.poly[i][1]); }
-    else { lx.moveTo(s.x, s.y); lx.quadraticCurveTo(s.qx, s.qy, s.ex, s.ey); }
-    lx.stroke();
-  }
-  if (!finish) return;
-  lx.shadowBlur = 0;
+
+  /* the beads, synapse crossings, boutons and cell bodies, each placed by height
+     so they appear as the growth front reaches them */
   const dots = mulberry32(5);
-  /* alveoli: small translucent beads on the finest tips */
+  lungMarks = [];
   for (const t of lungTips) {
     if (dots() < 0.65) continue;
-    lx.fillStyle = tint(0, 0.12 + dots() * 0.24);
-    lx.beginPath(); lx.arc(t.x, t.y, 0.8 + dots() * 0.8, 0, Math.PI * 2); lx.fill();
+    lungMarks.push({ top: t.y, kind: "bead", x: t.x, y: t.y, a: 0.12 + dots() * 0.24, r: 0.8 + dots() * 0.8 });
   }
-  /* synapses: a dotted crossing and a small bouton at each end */
-  lx.setLineDash([1, 3]);
   for (const s of synapses) {
-    lx.strokeStyle = tint(s.c, 0.22 + dots() * 0.18);
+    const pts = s.bridge ? s.pts : [[s.cleft[0], s.cleft[1]], [s.cleft[2], s.cleft[3]]];
+    lungMarks.push({ top: Math.min(...pts.map(q => q[1])), kind: "cleft", pts, c: s.c, a: 0.22 + dots() * 0.18 });
+  }
+  for (const s of synapses) for (const [x, y] of s.ends) lungMarks.push({ top: y, kind: "bouton", x, y, c: s.c, a: 0.3 + dots() * 0.2 });
+  for (const n of neurons) lungMarks.push({ top: n.y - n.r * 3, kind: "soma", n });
+
+  /* everything is drawn in order of its highest point, so it grows from the top edge down */
+  lungSegs.forEach(s => { s.top = s.poly ? Math.min(...s.poly.map(q => q[1])) : Math.min(s.y, s.qy, s.ey); });
+  lungSegs.sort((p, q) => p.top - q.top);
+  lungMarks.sort((p, q) => p.top - q.top);
+  lungDrawn = 0; marksDrawn = 0;
+  if (lungGrown || reduceMotion) drawLungsTo(Infinity);
+}
+let lungMarks = [], marksDrawn = 0;
+function drawMark(m) {
+  if (m.kind === "bead") {
+    lx.fillStyle = tint(0, m.a);
+    lx.beginPath(); lx.arc(m.x, m.y, m.r, 0, Math.PI * 2); lx.fill();
+  } else if (m.kind === "cleft") {
+    lx.setLineDash([1, 3]);
+    lx.strokeStyle = tint(m.c, m.a);
     lx.lineWidth = 0.8;
-    lx.beginPath();
-    if (s.bridge) { lx.moveTo(s.pts[0][0], s.pts[0][1]); for (let i = 1; i < s.pts.length; i++) lx.lineTo(s.pts[i][0], s.pts[i][1]); }
-    else { lx.moveTo(s.cleft[0], s.cleft[1]); lx.lineTo(s.cleft[2], s.cleft[3]); }
+    lx.beginPath(); lx.moveTo(m.pts[0][0], m.pts[0][1]);
+    for (let i = 1; i < m.pts.length; i++) lx.lineTo(m.pts[i][0], m.pts[i][1]);
     lx.stroke();
-  }
-  lx.setLineDash([]);
-  for (const s of synapses) for (const [x, y] of s.ends) {
-    lx.fillStyle = tint(s.c, 0.3 + dots() * 0.2);
-    lx.beginPath(); lx.arc(x, y, 1.3, 0, Math.PI * 2); lx.fill();
-  }
-  /* cell bodies: soft glows with a pale nucleus, never solid */
-  for (const n of neurons) {
+    lx.setLineDash([]);
+  } else if (m.kind === "bouton") {
+    lx.fillStyle = tint(m.c, m.a);
+    lx.beginPath(); lx.arc(m.x, m.y, 1.3, 0, Math.PI * 2); lx.fill();
+  } else {
+    /* a cell body: a soft glow with a pale nucleus, never solid */
+    const n = m.n;
     const g = lx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 3);
     g.addColorStop(0, tint(n.c, n.a));
     g.addColorStop(0.4, tint(n.c, n.a * 0.45));
@@ -1901,19 +1900,33 @@ function drawLungsTo(n, finish) {
     lx.beginPath(); lx.arc(n.x, n.y, n.r * 0.4, 0, Math.PI * 2); lx.fill();
   }
 }
+/* draw every stroke and mark whose highest point is above `front` (in px from the top) */
+function drawLungsTo(front) {
+  lx.lineCap = "round";
+  for (; lungDrawn < lungSegs.length && lungSegs[lungDrawn].top < front; lungDrawn++) {
+    const s = lungSegs[lungDrawn];
+    lx.strokeStyle = tint(s.c, s.alpha);
+    lx.shadowColor = tint(s.c, s.alpha * 0.5);
+    lx.shadowBlur = s.d < 3 ? 5 : 0;
+    lx.lineWidth = Math.max(0.35, s.wd);
+    lx.beginPath();
+    if (s.poly) { lx.moveTo(s.poly[0][0], s.poly[0][1]); for (let i = 1; i < s.poly.length; i++) lx.lineTo(s.poly[i][0], s.poly[i][1]); }
+    else { lx.moveTo(s.x, s.y); lx.quadraticCurveTo(s.qx, s.qy, s.ex, s.ey); }
+    lx.stroke();
+  }
+  lx.shadowBlur = 0;
+  for (; marksDrawn < lungMarks.length && lungMarks[marksDrawn].top < front; marksDrawn++) drawMark(lungMarks[marksDrawn]);
+}
 function growLungs() {
   if (lungStarted) return;
   lungStarted = true;
-  if (reduceMotion) { lungGrown = true; drawLungsTo(lungSegs.length, true); return; }
-  const t0 = performance.now(), DUR = 3000;
+  if (reduceMotion) { lungGrown = true; drawLungsTo(Infinity); return; }
+  /* a growth front sweeps down from the top edge of the footer */
+  const t0 = performance.now(), DUR = 3400;
   (function frame(now) {
     const p = Math.min(1, (now - t0) / DUR);
-    const eased = 1 - Math.pow(1 - p, 2);
-    /* reveal depth by depth: trachea first, nerves last */
-    const depthLimit = eased * (lungMaxD + 1);
-    let n = lungDrawn;
-    while (n < lungSegs.length && lungSegs[n].d < depthLimit) n++;
-    drawLungsTo(n, p === 1);
+    const eased = 1 - Math.pow(1 - p, 2.2);
+    drawLungsTo(p === 1 ? Infinity : -8 + eased * (lungH + 16));
     if (p < 1) requestAnimationFrame(frame);
     else { lungGrown = true; lv.classList.add("breathing"); kv.classList.add("breathing"); startSparks(); }
   })(t0);
