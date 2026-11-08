@@ -655,6 +655,78 @@ footer p {
   .coach .chev, .card.beckon::after, .sound .bars i { animation: none !important; }
   .card.beckon::after { opacity: 1; }
 }
+
+/* ---------- the orb and its hidden gallery ---------- */
+.orb {
+  position: absolute;
+  z-index: 2;
+  left: 86%;
+  top: clamp(64px, 8vw, 104px);
+  width: 36px; height: 36px;
+  margin: -18px 0 0 -18px;
+  padding: 0; border: 0; border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+}
+.orb span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #e2c2ff;
+  box-shadow: 0 0 12px 4px rgba(184, 77, 255, 0.95), 0 0 40px 14px rgba(184, 77, 255, 0.5), 0 0 100px 34px rgba(184, 77, 255, 0.22);
+  animation: glowlight 7.5s ease-in-out infinite;
+  animation-delay: -2.5s;
+}
+.orb:hover, .orb:focus-visible { transform: scale(2.1); }
+@media (max-width: 560px) { .orb { left: auto; right: 8px; top: 122px; margin: 0; } }
+.orb:hover span, .orb:focus-visible span { animation-play-state: paused; opacity: 1; background: #fff; }
+.orb:focus-visible { outline: 1px solid rgba(184, 77, 255, 0.8); outline-offset: 2px; }
+.vault {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  justify-items: center;
+  gap: 14px;
+  padding-top: calc(22px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: radial-gradient(circle at 50% 42%, rgba(184, 77, 255, 0.24), rgba(17, 15, 21, 0.97) 62%), #110f15;
+}
+.vault.opening { animation: vault-in .95s cubic-bezier(.2, .7, .2, 1); }
+@keyframes vault-in {
+  from { clip-path: circle(0px at var(--ox, 50%) var(--oy, 50%)); }
+  to { clip-path: circle(150vmax at var(--ox, 50%) var(--oy, 50%)); }
+}
+.vault-eyebrow {
+  margin: 0;
+  justify-self: start;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--f-label); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #d9b3ff;
+  min-height: 40px; /* level with the Close button, so the painting starts below it */
+}
+.vault-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: #e2c2ff; box-shadow: 0 0 10px 3px rgba(184, 77, 255, 0.9); }
+.vault-art { position: relative; width: 100%; min-height: 0; touch-action: pan-y; }
+.vault-art img, .vault-art .missing { position: absolute; inset: 0; margin: auto; }
+.vault-art .missing { width: min(100%, 320px); height: 100%; }
+.vault-art img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 0 0 1px rgba(184, 77, 255, 0.35), 0 0 80px -10px rgba(184, 77, 255, 0.55), 0 30px 80px rgba(0, 0, 0, 0.6); }
+.vault-cap { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.vault-cap .cat { margin: 0; font-family: var(--f-label); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); font-variant-numeric: tabular-nums; }
+.vault-cap h2 { margin: 0; font-weight: 400; font-style: italic; font-size: clamp(26px, 3vw, 38px); line-height: 1.1; text-wrap: balance; }
+.vault-strip { display: flex; gap: 8px; max-width: 100%; overflow-x: auto; padding: 2px; }
+.vault-strip button { flex: none; width: 52px; height: 52px; padding: 0; border: 1px solid var(--line); background: var(--void-2); cursor: pointer; opacity: 0.55; transition: opacity .3s, border-color .3s; }
+.vault-strip button img, .vault-strip .missing { width: 100%; height: 100%; object-fit: cover; font-size: 9px; padding: 2px; }
+.vault-strip button:hover { opacity: 0.9; }
+.vault-strip button[aria-current="true"] { opacity: 1; border-color: var(--violet, #b84dff); box-shadow: 0 0 14px -2px rgba(184, 77, 255, 0.8); }
+.vault-nav { margin-top: 0; padding-top: 0; }
+@media (max-width: 760px) { .vault-nav { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .vault.opening { animation: none; }
+  .orb span { animation: none; }
+}
 </style>
 </head>
 <body>
@@ -705,6 +777,7 @@ footer p {
       <i style="--x:74%;--y:79%;--s:7px;--d:9.5s;--dl:-3.5s"></i>
       <i style="--x:56%;--y:94%;--s:4px;--d:7s;--dl:-5.5s"></i>
     </div>
+    <button class="orb" id="orb" type="button" aria-label="A small glowing light"><span></span></button>
     <div class="glow" id="index-glow" aria-hidden="true"></div>
     <div class="band-inner">
       <p class="eyebrow" id="index-count"></p>
@@ -762,6 +835,21 @@ footer p {
   <button class="close" type="button" id="exam-close">Close</button>
 </div>
 
+<div class="vault" id="vault" role="dialog" aria-modal="true" aria-labelledby="vault-title" hidden>
+  <p class="vault-eyebrow"><i aria-hidden="true"></i><span id="vault-name">Hidden gallery</span></p>
+  <div class="vault-art" id="vault-art"></div>
+  <div class="vault-cap">
+    <p class="cat" id="vault-cat"></p>
+    <h2 id="vault-title"></h2>
+  </div>
+  <div class="vault-strip" id="vault-strip" role="group" aria-label="Works in the hidden gallery"></div>
+  <div class="exam-nav vault-nav">
+    <button type="button" id="vault-prev">← Previous</button>
+    <button type="button" id="vault-next">Next →</button>
+  </div>
+  <button class="close" type="button" id="vault-close">Close</button>
+</div>
+
 <script>
 /* =====================================================================
    THE COLLECTION
@@ -790,6 +878,25 @@ const WORKS = [
   { title: "Rain Woman", year: "", medium: "", size: "", note: "", src: "rain-woman.jpg" },
   { title: "Cloud Valley", year: "", medium: "", size: "", note: "", src: "cloud-valley.jpg" }
 ];
+
+/* THE HIDDEN GALLERY
+   Opened by the tiny violet orb beside "Index of the collection".
+   Not listed in the index, the ring, the share pages or the sitemap.
+   - name: shown at the top of the hidden gallery ("" shows just "Hidden gallery")
+   - title, year: optional, like the main list */
+const HIDDEN = {
+  name: "",
+  works: [
+    { title: "Untitled", year: "", src: WP + "2025/02/a6ff0-img_0536.jpg" },
+    { title: "Untitled", year: "", src: WP + "2025/02/939dc-img_1984.jpg" },
+    { title: "Untitled", year: "", src: WP + "2025/02/d312f-img_4082.jpg" },
+    { title: "Complex Daydream", year: "", src: WP + "2022/10/complex_daydream.jpg" },
+    { title: "Untitled", year: "", src: WP + "2022/02/20210628_220557.jpg" },
+    { title: "Untitled", year: "", src: WP + "2021/02/img_07001.jpg" },
+    { title: "Untitled", year: "", src: WP + "2021/02/img_8457.jpg" },
+    { title: "A Trip in the Mountains", year: "", src: WP + "2020/12/a-trip-in-the-mountains-camicamirobot.png" }
+  ]
+};
 
 /* WordPress can resize (and crop, in percent: x,y,w,h) on the fly.
    Local files: the ring and index use the small "-sm.jpg" copy; the close-up view uses the full file. */
@@ -1217,6 +1324,96 @@ exam.addEventListener("click", e => {
   if (performance.now() - openedAt < 500) return; /* the tap that opened it, arriving late as a click */
   if (e.target === exam || e.target.id === "exam-art") closeExam();
 });
+
+/* ---------------- the hidden gallery ----------------
+   The orb blooms open into a violet room holding the HIDDEN works.
+   Its address is #/hidden/1, #/hidden/2 ... so it can be passed on once found. */
+const vault = document.getElementById("vault");
+const orbBtn = document.getElementById("orb");
+const VN = HIDDEN.works.length;
+let vIndex = 0, vPushed = false, vReturn = null;
+document.getElementById("vault-name").textContent = HIDDEN.name ? "Hidden gallery · " + HIDDEN.name : "Hidden gallery";
+const vStrip = document.getElementById("vault-strip");
+const vThumbs = HIDDEN.works.map((w, i) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.setAttribute("aria-label", pad(i + 1) + " " + w.title);
+  b.appendChild(makeImg(w, 160));
+  b.addEventListener("click", () => showVault(i));
+  vStrip.appendChild(b);
+  return b;
+});
+function fillVault(i) {
+  vIndex = i;
+  const w = HIDDEN.works[i];
+  const art = document.getElementById("vault-art");
+  art.innerHTML = "";
+  const img = makeImg(w, 1600);
+  img.loading = "eager";
+  art.appendChild(img);
+  document.getElementById("vault-cat").textContent = "No. " + pad(i + 1) + " of " + pad(VN) + (w.year ? " · " + w.year : "");
+  document.getElementById("vault-title").textContent = w.title;
+  vThumbs.forEach((t, k) => t.setAttribute("aria-current", k === i ? "true" : "false"));
+  const t = vThumbs[i];
+  vStrip.scrollLeft = t.offsetLeft - (vStrip.clientWidth - t.offsetWidth) / 2;
+  document.title = w.title + " · camicamirobot";
+}
+function vaultFromHash() {
+  const m = location.hash.match(/^#\/hidden(?:\/(\d+))?$/);
+  if (!m) return -1;
+  return Math.min(Math.max((parseInt(m[1] || "1", 10) || 1) - 1, 0), VN - 1);
+}
+function showVault(i) { fillVault(i); history.replaceState({ vault: i }, "", "#/hidden/" + (i + 1)); }
+function openVault(i, fromHistory) {
+  vReturn = document.activeElement;
+  const r = orbBtn.getBoundingClientRect();
+  vault.style.setProperty("--ox", Math.round(r.left + r.width / 2) + "px");
+  vault.style.setProperty("--oy", Math.round(r.top + r.height / 2) + "px");
+  vault.hidden = false;
+  fillVault(i);
+  if (!fromHistory) { history.pushState({ vault: i }, "", "#/hidden/" + (i + 1)); vPushed = true; }
+  vault.classList.remove("opening"); void vault.offsetWidth;
+  if (!reduceMotion) vault.classList.add("opening");
+  document.body.style.overflow = "hidden";
+  document.getElementById("vault-close").focus({ preventScroll: true });
+  chime(7, true);
+}
+function closeVault(fromHistory) {
+  if (vault.hidden) return;
+  vault.hidden = true;
+  document.body.style.overflow = "";
+  document.title = BASE_TITLE;
+  if (vReturn && vReturn.focus) vReturn.focus({ preventScroll: true });
+  if (fromHistory) return;
+  if (vPushed) { vPushed = false; history.back(); }
+  else history.replaceState(null, "", location.pathname + location.search);
+}
+orbBtn.addEventListener("click", () => openVault(0));
+document.getElementById("vault-close").addEventListener("click", () => closeVault());
+document.getElementById("vault-prev").addEventListener("click", () => showVault((vIndex - 1 + VN) % VN));
+document.getElementById("vault-next").addEventListener("click", () => showVault((vIndex + 1) % VN));
+document.addEventListener("keydown", e => {
+  if (vault.hidden) return;
+  if (e.key === "Escape") closeVault();
+  if (e.key === "ArrowRight") showVault((vIndex + 1) % VN);
+  if (e.key === "ArrowLeft") showVault((vIndex - 1 + VN) % VN);
+});
+window.addEventListener("popstate", () => {
+  const v = vaultFromHash();
+  if (v < 0) { vPushed = false; closeVault(true); return; }
+  if (vault.hidden) { openVault(v, true); vPushed = false; } else fillVault(v);
+});
+/* swipe left or right on the painting to move through the hidden works */
+const vArt = document.getElementById("vault-art");
+let vSwipe = null;
+vArt.addEventListener("pointerdown", e => { vSwipe = { x: e.clientX, y: e.clientY, id: e.pointerId }; });
+vArt.addEventListener("pointerup", e => {
+  if (!vSwipe || e.pointerId !== vSwipe.id) return;
+  const dx = e.clientX - vSwipe.x, dy = e.clientY - vSwipe.y;
+  vSwipe = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) showVault((vIndex + (dx < 0 ? 1 : -1) + VN) % VN);
+});
+vArt.addEventListener("pointercancel", () => { vSwipe = null; });
 
 /* ---------------- contact ---------------- */
 document.getElementById("year").textContent = new Date().getFullYear();
@@ -1744,9 +1941,11 @@ if (linked >= 0) {
   rot = target = -linked * STEP;
   openExam(linked, true);
 }
+const vLinked = vaultFromHash();
+if (vLinked >= 0) openVault(vLinked, true);
 
 /* first visit: the ring turns a little on its own and comes back, so it's clear it moves */
-if (!coach.turned && !reduceMotion && linked < 0) {
+if (!coach.turned && !reduceMotion && linked < 0 && vLinked < 0) {
   setTimeout(() => {
     if (coach.turned || dragging) return;
     target -= STEP * 0.6;
