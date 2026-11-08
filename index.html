@@ -1,11 +1,20 @@
 <!doctype html>
 <html lang="en">
 <head>
-   <link rel="icon" type="image/png" href="/favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>camicamirobot</title>
 <meta name="description" content="Psychedelic surrealism by Camille Taylor. Ancient and futuristic at the same time. Technological, but organic.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="180x180" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="canonical" href="https://camicamirobot.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="camicamirobot · Camille Taylor">
+<meta property="og:description" content="Psychedelic surrealism by Camille Taylor. Ancient and futuristic at the same time. Technological, but organic.">
+<meta property="og:image" content="https://camicamirobot.com/alien.jpg">
+<meta property="og:url" content="https://camicamirobot.com/">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -288,6 +297,25 @@ button { font: inherit; color: inherit; }
 .nebula i:nth-child(2) { width: 52%; height: 50%; right: 4%; top: 36%; background: radial-gradient(closest-side, rgba(37, 200, 222, 0.24), rgba(37, 200, 222, 0)); animation-duration: 52s; animation-delay: -18s; }
 .nebula i:nth-child(3) { width: 30%; height: 30%; left: 38%; bottom: 8%; background: radial-gradient(closest-side, rgba(195, 219, 9, 0.14), rgba(195, 219, 9, 0)); animation-duration: 34s; animation-delay: -7s; }
 .nebula i:nth-child(4) { width: 26%; height: 28%; left: 60%; top: 6%; background: radial-gradient(closest-side, rgba(245, 9, 131, 0.16), rgba(245, 9, 131, 0)); animation-duration: 46s; animation-delay: -30s; }
+/* violet (#B84DFF) glow clouds */
+.nebula i:nth-child(5) { width: 44%; height: 40%; left: -4%; top: 52%; background: radial-gradient(closest-side, rgba(184, 77, 255, 0.46), rgba(184, 77, 255, 0)); animation-duration: 44s; animation-delay: -12s; }
+.nebula i:nth-child(6) { width: 34%; height: 34%; left: 52%; top: 64%; background: radial-gradient(closest-side, rgba(184, 77, 255, 0.38), rgba(184, 77, 255, 0)); animation-duration: 38s; animation-delay: -24s; }
+/* small violet lights scattered through the index, each breathing at its own pace */
+.lights { position: absolute; inset: 0; pointer-events: none; }
+.lights i {
+  position: absolute;
+  left: var(--x); top: var(--y);
+  width: var(--s, 6px); height: var(--s, 6px);
+  border-radius: 50%;
+  background: #e2c2ff;
+  box-shadow: 0 0 12px 4px rgba(184, 77, 255, 0.95), 0 0 40px 14px rgba(184, 77, 255, 0.5), 0 0 100px 34px rgba(184, 77, 255, 0.22);
+  animation: glowlight var(--d, 7s) ease-in-out infinite;
+  animation-delay: var(--dl, 0s);
+}
+@keyframes glowlight {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
 @keyframes nebula-drift {
   from { transform: translate(0, 0) scale(1); }
   to { transform: translate(7%, -6%) scale(1.18); }
@@ -389,7 +417,8 @@ button { font: inherit; color: inherit; }
   .index li:nth-child(odd) { justify-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nebula i, .index button { animation: none; }
+  .nebula i, .index button, .lights i { animation: none; }
+  .lights i { opacity: 0.7; }
   .index li { transition: opacity .3s; }
 }
 
@@ -401,6 +430,17 @@ button { font: inherit; color: inherit; }
   align-items: start;
 }
 .statement { margin: 0; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.35; max-width: 30ch; }
+/* artist bio: a large lead paragraph, then readable body text */
+.bio h2 .sep { color: var(--dim); font-style: normal; }
+.bio h2 .wm { font-family: var(--f-mark); font-style: normal; font-size: 0.72em; letter-spacing: 0.01em; }
+.bio .statement { max-width: 34ch; margin-bottom: 30px; }
+.bio p:not(.eyebrow):not(.statement) { margin: 0 0 18px; font-size: 19px; line-height: 1.65; max-width: 62ch; color: rgba(236, 230, 220, 0.92); }
+.wm-c { color: var(--gold); } /* the name inside running text: one color, easy to read */
+.bio .coda { margin-top: 30px !important; font-style: italic; font-size: clamp(21px, 2.2vw, 26px) !important; line-height: 1.35 !important; color: var(--bone) !important; }
+.bio .eyebrow { line-height: 1.6; }
+.contact { position: sticky; top: 110px; }
+@media (max-width: 760px) { .contact { position: static; } }
+@media (max-width: 560px) { .bio h2 .sep { display: none; } .bio h2 .wm { display: block; margin-top: 6px; } }
 .contact { display: grid; gap: 18px; font-family: var(--f-label); font-size: 13px; }
 .contact div { display: grid; gap: 4px; }
 .contact dd { margin: 0; }
@@ -530,6 +570,91 @@ footer p {
   #lungs.breathing { animation: none; }
   .index .thumb img { transition: none; }
 }
+
+/* ---------- sound toggle ---------- */
+.sound {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; letter-spacing: inherit; text-transform: inherit;
+  color: var(--dim); transition: color .2s;
+}
+.sound:hover, .sound[aria-pressed="true"] { color: var(--bone); }
+.bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
+.bars i { width: 2px; height: 3px; background: currentColor; }
+.sound[aria-pressed="true"] .bars i { background: var(--gold); animation: eq 1.1s ease-in-out infinite; }
+.sound[aria-pressed="true"] .bars i:nth-child(2) { animation-delay: -.4s; }
+.sound[aria-pressed="true"] .bars i:nth-child(3) { animation-delay: -.75s; }
+@keyframes eq { 0%, 100% { height: 3px; } 50% { height: 10px; } }
+
+/* ---------- first visit: show what the ring does ---------- */
+.hint { display: grid; justify-items: center; gap: 10px; }
+.coach {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 9px 16px;
+  border: 1px solid rgba(195, 219, 9, 0.5);
+  border-radius: 999px;
+  background: rgba(23, 21, 27, 0.72);
+  font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--bone);
+  transition: opacity .7s ease;
+}
+.coach .chev { color: var(--gold); font-size: 16px; line-height: 1; animation: chev-l 1.5s ease-in-out infinite; }
+.coach .chev.r { animation-name: chev-r; }
+@keyframes chev-l { 0%, 100% { transform: translateX(0); opacity: .45; } 50% { transform: translateX(-6px); opacity: 1; } }
+@keyframes chev-r { 0%, 100% { transform: translateX(0); opacity: .45; } 50% { transform: translateX(6px); opacity: 1; } }
+.coach.done { opacity: 0; }
+.hint-open { transition: color .6s ease; }
+.hint-open.fresh { color: var(--bone); }
+.card.beckon::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--magenta);
+  pointer-events: none;
+  animation: beckon 2.2s ease-in-out infinite;
+}
+@keyframes beckon {
+  0%, 100% { opacity: .3; box-shadow: 0 0 0 0 rgba(245, 9, 131, 0); }
+  50% { opacity: 1; box-shadow: 0 0 30px 2px rgba(245, 9, 131, 0.45); }
+}
+.ticks { flex-wrap: wrap; justify-content: center; }
+@media (max-width: 420px) { .ticks { gap: 2px; } }
+
+/* ---------- the hidden reward ---------- */
+.flare {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 42%, rgba(245, 9, 131, 0.32), rgba(37, 200, 222, 0.16) 28%, rgba(195, 219, 9, 0.06) 45%, rgba(23, 21, 27, 0) 62%);
+}
+.stage.woke .flare { animation: flare 1.9s ease-out; }
+@keyframes flare {
+  0% { opacity: 0; transform: scale(.6); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+.whisper {
+  position: absolute;
+  left: 0; right: 0; top: -44px;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity .9s ease;
+}
+.whisper.on { opacity: 1; }
+
+/* ---------- close-up view: share and swipe ---------- */
+.exam-art { touch-action: pan-y; }
+.share { align-self: flex-start; margin-top: 0; }
+.share-url { margin: -8px 0 0; font-family: var(--f-label); font-size: 12px; color: var(--dim); word-break: break-all; user-select: all; }
+
+@media (prefers-reduced-motion: reduce) {
+  .coach .chev, .card.beckon::after, .sound .bars i { animation: none !important; }
+  .card.beckon::after { opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -544,11 +669,13 @@ footer p {
     <a href="#top">Collection</a>
     <a href="#index">Index</a>
     <a href="#about">About</a>
+    <button class="sound" id="sound" type="button" aria-pressed="false" title="Ambient sound"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="sound-label">Sound off</span></button>
   </nav>
 </header>
 
 <main>
   <section class="stage" id="top" aria-label="The collection, arranged on a turning ring" tabindex="0">
+    <div class="flare" aria-hidden="true"></div>
     <div class="ring-wrap">
       <div class="ring" id="ring"></div>
     </div>
@@ -556,12 +683,28 @@ footer p {
       <div class="cat" id="readout-cat"></div>
       <h1 id="readout-title"></h1>
       <div class="ticks" id="ticks" role="group" aria-label="Jump to a work"></div>
-      <div class="hint" id="hint">drag or scroll to turn · tap the front work to examine it</div>
+      <div class="whisper" id="whisper"></div>
+      <div class="hint" id="hint">
+        <span class="coach" id="coach"><span class="chev" aria-hidden="true">‹</span><span id="coach-text">drag to turn</span><span class="chev r" aria-hidden="true">›</span></span>
+        <span class="hint-open" id="hint-open">click the glowing painting to open it</span>
+      </div>
     </div>
   </section>
 
   <section class="band" id="index" aria-labelledby="index-title">
-    <div class="nebula" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="nebula" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="lights" aria-hidden="true">
+      <i style="--x:7%;--y:12%;--s:5px;--d:8s;--dl:-1s"></i>
+      <i style="--x:31%;--y:27%;--s:4px;--d:6.5s;--dl:-3s"></i>
+      <i style="--x:88%;--y:9%;--s:7px;--d:9s;--dl:-5s"></i>
+      <i style="--x:63%;--y:33%;--s:4px;--d:7s;--dl:-2s"></i>
+      <i style="--x:14%;--y:56%;--s:6px;--d:10s;--dl:-6s"></i>
+      <i style="--x:47%;--y:61%;--s:5px;--d:7.5s;--dl:-4s"></i>
+      <i style="--x:92%;--y:52%;--s:4px;--d:6s;--dl:-1.5s"></i>
+      <i style="--x:24%;--y:84%;--s:5px;--d:8.5s;--dl:-7s"></i>
+      <i style="--x:74%;--y:79%;--s:7px;--d:9.5s;--dl:-3.5s"></i>
+      <i style="--x:56%;--y:94%;--s:4px;--d:7s;--dl:-5.5s"></i>
+    </div>
     <div class="glow" id="index-glow" aria-hidden="true"></div>
     <div class="band-inner">
       <p class="eyebrow" id="index-count"></p>
@@ -572,19 +715,24 @@ footer p {
 
   <section class="band" id="about" aria-labelledby="about-title">
     <div class="band-inner about-grid">
-      <div>
-        <p class="eyebrow">Camille Taylor · Florida</p>
-        <h2 id="about-title">Psychedelic surrealism</h2>
-        <p class="statement">Ancient and futuristic at the same time. Technological, but organic. Painted in the woods of North Florida, between the springs, the cypress and the songbirds.</p>
+      <div class="bio">
+        <p class="eyebrow">American surrealist artist · Painting · Photography · Experimental visual art</p>
+        <h2 id="about-title">Camille Taylor <span class="sep">|</span> <span class="wm"><span class="wm-p">Camicami</span><span class="wm-t">robot</span></span></h2>
+        <p class="statement">Camille Taylor, known professionally as <span class="wm-c">Camicamirobot</span>, is an independent American visual artist based in North Florida. Her multidisciplinary practice explores the intersections of nature, technology, consciousness, and the unknown through psychedelic surrealist painting, photography, and experimental visual imagery.</p>
+        <p>Born in the Appalachian Mountains and raised in Pasco County, Florida, Taylor developed an artistic perspective shaped by the contrasting landscapes of the American Southeast. Her work draws upon organic patterns, biological structures, and the peculiar familiarity of things that appear otherworldly. Saturated colors, anatomical references, extraterrestrial figures, and branching compositions populate imagined environments where the boundaries between the natural and artificial begin to dissolve.</p>
+        <p>Working across traditional and digital mediums, Taylor has maintained the creative identity <span class="wm-c">Camicamirobot</span> for more than a decade. Her background encompasses painting, photography, artistic modeling, and graphic design, reflecting an independent creative practice that extends beyond any single discipline.</p>
+        <p>Her work has been exhibited in independent community spaces, including coffee shop exhibitions in Eugene, Oregon, and acquired by private individuals and local businesses in Boise, Idaho, New Orleans, Louisiana, and other locations. In 2022, her 2020 painting <em>Quantum Earth</em> was acquired by Goodson Gallery in New Orleans and subsequently featured in the gallery's September art giveaway.</p>
+        <p>Currently working amid the springs, forests, and wildlife of North Florida, Taylor continues to investigate the relationship between the observable and the imagined, creating work that invites curiosity rather than prescribing interpretation.</p>
+        <p class="coda"><span class="wm-c">Camicamirobot</span> is an ongoing exploration of a strange and living world.</p>
       </div>
       <dl class="contact">
         <div>
           <dt>Follow the work in progress</dt>
-          <dd><a href="https://www.instagram.com/camicamirobot/" target="_blank" rel="noopener">Instagram · @<span class="wm-p">camicami</span><span class="wm-t">robot</span></a></dd>
+          <dd><a href="https://www.instagram.com/camicamirobot/" target="_blank" rel="noopener">Instagram · @camicamirobot</a></dd>
         </div>
         <div>
           <dt>Originals and commissions</dt>
-          <dd><span id="email"><span class="wm-p">camicami</span><span class="wm-t">robot</span>@gmail.com</span></dd>
+          <dd><span id="email">camicamirobot@gmail.com</span></dd>
           <dd><button class="copy" id="copy-email" type="button">Copy email</button></dd>
         </div>
       </dl>
@@ -604,6 +752,8 @@ footer p {
     <h2 id="exam-title"></h2>
     <dl id="exam-facts"></dl>
     <p class="note" id="exam-note"></p>
+    <button class="copy share" type="button" id="exam-share">Share link</button>
+    <p class="share-url" id="exam-url" hidden></p>
     <div class="exam-nav">
       <button type="button" id="exam-prev">← Previous</button>
       <button type="button" id="exam-next">Next →</button>
@@ -652,6 +802,41 @@ const pad = n => String(n).padStart(2, "0");
 const N = WORKS.length;
 const STEP = 360 / N;
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const coarse = window.matchMedia("(pointer: coarse)").matches; /* phones and tablets */
+
+/* every work gets a short name for its link: camicamirobot.com/#/alien-with-dna
+   (keep in step with the share pages, which use the same names) */
+const SLUGS = [];
+WORKS.forEach(w => {
+  const s = w.title.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "work";
+  let k = s, n = 2;
+  while (SLUGS.includes(k)) k = s + "-" + n++;
+  SLUGS.push(k);
+});
+
+/* first visit: say plainly how the ring works, then get out of the way once they've done it */
+const coach = { turned: false, opened: false };
+try { const saved = JSON.parse(localStorage.getItem("ccr-coach") || "{}"); coach.turned = !!saved.turned; coach.opened = !!saved.opened; } catch (err) {}
+function saveCoach() { try { localStorage.setItem("ccr-coach", JSON.stringify(coach)); } catch (err) {} }
+const coachEl = document.getElementById("coach");
+const hintOpen = document.getElementById("hint-open");
+document.getElementById("coach-text").textContent = coarse ? "swipe to turn" : "drag to turn";
+hintOpen.textContent = (coarse ? "tap" : "click") + " the glowing painting to open it";
+if (coach.turned) coachEl.hidden = true;
+if (!coach.opened) hintOpen.classList.add("fresh");
+function markTurned() {
+  if (coach.turned) return;
+  coach.turned = true; saveCoach();
+  coachEl.classList.add("done");
+  setTimeout(() => { coachEl.hidden = true; }, 700);
+}
+function markOpened() {
+  if (coach.opened) return;
+  coach.opened = true; saveCoach();
+  hintOpen.classList.remove("fresh");
+  cards.forEach(c => c.classList.remove("beckon"));
+}
 
 function makeImg(work, w, cls) {
   const img = new Image();
@@ -685,17 +870,15 @@ const cards = WORKS.map((work, i) => {
   tag.innerHTML = "<b>" + pad(i + 1) + "</b><span></span>";
   tag.lastChild.textContent = work.year || "—";
   b.appendChild(tag);
-  b.addEventListener("click", e => {
-    if (moved) { e.preventDefault(); return; }
-    if (frontIndex() === i) openExam(i); else goTo(i);
-  });
+  /* mouse and touch taps are handled by tapAt() below; this covers Enter/Space on a focused card */
+  b.addEventListener("click", e => { if (e.detail === 0) activateCard(i); });
   ring.appendChild(b);
 
   const t = document.createElement("button");
   t.type = "button";
   t.className = "tick";
   t.setAttribute("aria-label", pad(i + 1) + " " + work.title);
-  t.addEventListener("click", () => goTo(i));
+  t.addEventListener("click", () => { goTo(i); markTurned(); });
   ticksEl.appendChild(t);
   return b;
 });
@@ -735,7 +918,9 @@ function render() {
   });
   const f = frontIndex();
   if (f !== lastFront) {
+    if (lastFront !== -1) chime(f);
     lastFront = f;
+    cards.forEach((c, i) => c.classList.toggle("beckon", !coach.opened && i === f));
     document.getElementById("readout-cat").textContent = "No. " + pad(f + 1) + " of " + pad(N) + (WORKS[f].year ? " · " + WORKS[f].year : "");
     document.getElementById("readout-title").textContent = WORKS[f].title;
     ticks.forEach((t, i) => t.setAttribute("aria-current", i === f ? "true" : "false"));
@@ -759,32 +944,66 @@ function tick(now) {
   requestAnimationFrame(tick);
 }
 
-/* drag */
+/* drag: a sideways drag turns the ring; an up-and-down swipe is left alone so the
+   page still scrolls on phones; a short tap (under 8px of movement) opens the painting */
+let startX = 0, startY = 0, activeId = null, axis = null;
 stage.addEventListener("pointerdown", e => {
-  if (e.button !== 0) return;
-  dragging = true; moved = false;
-  lastX = e.clientX; lastT = performance.now(); vel = 0;
-  stage.classList.add("dragging");
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  if (e.target.closest(".tick")) return;
+  activeId = e.pointerId; axis = null; moved = false;
+  startX = lastX = e.clientX; startY = e.clientY; lastT = performance.now(); vel = 0;
 });
 window.addEventListener("pointermove", e => {
-  if (!dragging) return;
+  if (e.pointerId !== activeId) return;
+  if (!axis) {
+    const tx = e.clientX - startX, ty = e.clientY - startY;
+    if (Math.hypot(tx, ty) < 8) return;
+    axis = Math.abs(tx) > Math.abs(ty) ? "x" : "y";
+    if (axis === "y") { activeId = null; return; }
+    dragging = true; moved = true;
+    stage.classList.add("dragging");
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    markTurned();
+  }
   const dx = e.clientX - lastX;
-  if (Math.abs(dx) > 3) moved = true;
   const now = performance.now();
   const d = dx * 0.22;
   rot += d; target = rot;
-  vel = d / Math.max(1, (now - lastT) / 16);
+  vel = Math.max(-40, Math.min(40, d / Math.max(1, (now - lastT) / 16)));
   lastX = e.clientX; lastT = now;
   lastInteraction = now;
 });
-window.addEventListener("pointerup", () => {
-  if (!dragging) return;
+/* the front painting (or the one the ring is settling onto) opens; any other comes forward */
+function activateCard(i) {
+  const settling = Math.round(wrap360(-target) / STEP) % N;
+  if (frontIndex() === i || settling === i) openExam(i); else { goTo(i); markTurned(); }
+}
+/* find the painting under a tap ourselves: phone browsers don't always hit-test
+   3D-rotated elements reliably after the page has scrolled */
+function tapAt(x, y) {
+  let best = -1, bestFacing = 0;
+  cards.forEach((c, i) => {
+    const r = c.getBoundingClientRect();
+    if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+    const facing = Math.cos((i * STEP + rot) * Math.PI / 180);
+    if (facing > bestFacing) { bestFacing = facing; best = i; }
+  });
+  if (best >= 0) activateCard(best);
+}
+function endDrag(e) {
+  if (e.pointerId !== activeId) return;
+  activeId = null;
+  if (!dragging) { if (e.type === "pointerup") tapAt(e.clientX, e.clientY); return; }
   dragging = false;
   stage.classList.remove("dragging");
+  if (e.type === "pointercancel" || performance.now() - lastT > 90) vel = 0; /* held still before letting go: no fling */
+  if (Math.abs(vel) >= 8) surprise(); /* a hard fling, roughly 2300px a second */
   if (Math.abs(vel) < 0.3) { vel = 0; snap(); }
   if (reduceMotion) { vel = 0; snap(); rot = target; }
   setTimeout(() => { moved = false; }, 0);
-});
+}
+window.addEventListener("pointerup", endDrag);
+window.addEventListener("pointercancel", endDrag);
 
 /* wheel turns the ring only while hovering it, and only for mostly-horizontal or shift scrolling,
    so the page still scrolls down normally */
@@ -795,6 +1014,7 @@ stage.addEventListener("wheel", e => {
   e.preventDefault();
   wheelAcc += (e.shiftKey ? e.deltaY : e.deltaX);
   if (Math.abs(wheelAcc) > 40) {
+    markTurned();
     goTo((frontIndex() + (wheelAcc > 0 ? 1 : -1) + N) % N);
     wheelAcc = 0;
   }
@@ -802,8 +1022,8 @@ stage.addEventListener("wheel", e => {
 
 /* keyboard */
 stage.addEventListener("keydown", e => {
-  if (e.key === "ArrowRight") { e.preventDefault(); goTo((frontIndex() + 1) % N); }
-  if (e.key === "ArrowLeft") { e.preventDefault(); goTo((frontIndex() - 1 + N) % N); }
+  if (e.key === "ArrowRight") { e.preventDefault(); markTurned(); goTo((frontIndex() + 1) % N); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); markTurned(); goTo((frontIndex() - 1 + N) % N); }
   if (e.key === "Enter" && e.target === stage) { e.preventDefault(); openExam(frontIndex()); }
 });
 
@@ -903,30 +1123,100 @@ function fillExam(i) {
   const note = document.getElementById("exam-note");
   note.textContent = w.note;
   note.hidden = !w.note;
+  document.getElementById("exam-url").hidden = true;
+  document.title = w.title + " · camicamirobot";
 }
-function openExam(i) {
+
+/* each open painting has its own address (#/alien-with-dna), so the back button
+   closes it and the link can be copied or shared */
+const BASE_TITLE = document.title;
+let examPushed = false, openedAt = 0;
+function workFromHash() {
+  const m = location.hash.match(/^#\/(.+)$/);
+  return m ? SLUGS.indexOf(decodeURIComponent(m[1])) : -1;
+}
+function showWork(i) {
+  fillExam(i);
+  history.replaceState({ work: i }, "", "#/" + SLUGS[i]);
+}
+function openExam(i, fromHistory) {
   returnFocus = document.activeElement;
   fillExam(i);
+  if (!fromHistory) { history.pushState({ work: i }, "", "#/" + SLUGS[i]); examPushed = true; }
   exam.hidden = false;
   document.body.style.overflow = "hidden";
   document.getElementById("exam-close").focus();
+  markOpened();
+  openedAt = performance.now();
 }
-function closeExam() {
+function closeExam(fromHistory) {
+  if (exam.hidden) return;
   exam.hidden = true;
   document.body.style.overflow = "";
+  document.title = BASE_TITLE;
   goTo(examIndex);
-  if (returnFocus && returnFocus.focus) returnFocus.focus();
+  if (returnFocus && returnFocus.focus) returnFocus.focus({ preventScroll: true });
+  if (fromHistory) return;
+  if (examPushed) { examPushed = false; history.back(); }
+  else history.replaceState(null, "", location.pathname + location.search);
 }
-document.getElementById("exam-close").addEventListener("click", closeExam);
-document.getElementById("exam-prev").addEventListener("click", () => fillExam((examIndex - 1 + N) % N));
-document.getElementById("exam-next").addEventListener("click", () => fillExam((examIndex + 1) % N));
+window.addEventListener("popstate", () => {
+  const i = workFromHash();
+  if (i < 0) { examPushed = false; closeExam(true); return; }
+  if (exam.hidden) { openExam(i, true); examPushed = false; } else fillExam(i);
+  goTo(i);
+});
+document.getElementById("exam-close").addEventListener("click", () => closeExam());
+document.getElementById("exam-prev").addEventListener("click", () => showWork((examIndex - 1 + N) % N));
+document.getElementById("exam-next").addEventListener("click", () => showWork((examIndex + 1) % N));
 document.addEventListener("keydown", e => {
   if (exam.hidden) return;
   if (e.key === "Escape") closeExam();
-  if (e.key === "ArrowRight") fillExam((examIndex + 1) % N);
-  if (e.key === "ArrowLeft") fillExam((examIndex - 1 + N) % N);
+  if (e.key === "ArrowRight") showWork((examIndex + 1) % N);
+  if (e.key === "ArrowLeft") showWork((examIndex - 1 + N) % N);
 });
-exam.addEventListener("click", e => { if (e.target === exam || e.target.id === "exam-art") closeExam(); });
+
+/* share: phones get the system share sheet; computers copy the link.
+   The link goes to the painting's own page (camicamirobot.com/alien-with-dna),
+   which shows a proper preview when pasted into a message or post. */
+document.getElementById("exam-share").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  const w = WORKS[examIndex];
+  const url = new URL(SLUGS[examIndex], location.href.split("#")[0]).href;
+  if (navigator.share && coarse) {
+    try { await navigator.share({ title: w.title + " · camicamirobot", url }); return; }
+    catch (err) { if (err && err.name === "AbortError") return; }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    btn.textContent = "Link copied";
+    setTimeout(() => { btn.textContent = "Share link"; }, 1800);
+  } catch (err) {
+    const box = document.getElementById("exam-url");
+    box.textContent = url;
+    box.hidden = false;
+  }
+});
+
+/* swipe left or right on the painting to move through the collection */
+const examArt = document.getElementById("exam-art");
+let swipe = null, swiped = false;
+examArt.addEventListener("pointerdown", e => { swipe = { x: e.clientX, y: e.clientY, id: e.pointerId }; swiped = false; });
+examArt.addEventListener("pointerup", e => {
+  if (!swipe || e.pointerId !== swipe.id) return;
+  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+  swipe = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    swiped = true;
+    showWork((examIndex + (dx < 0 ? 1 : -1) + N) % N);
+  }
+});
+examArt.addEventListener("pointercancel", () => { swipe = null; });
+exam.addEventListener("click", e => {
+  if (swiped) { swiped = false; return; }
+  if (performance.now() - openedAt < 500) return; /* the tap that opened it, arriving late as a click */
+  if (e.target === exam || e.target.id === "exam-art") closeExam();
+});
 
 /* ---------------- contact ---------------- */
 document.getElementById("year").textContent = new Date().getFullYear();
@@ -1340,6 +1630,97 @@ new IntersectionObserver(entries => {
   if (entries.some(e => e.isIntersecting)) growLungs();
 }, { threshold: 0.15 }).observe(lv);
 
+/* ---------------- sound ----------------
+   Off until the visitor turns it on. Everything is synthesized in the browser
+   (no audio files): a low, slowly breathing drone, and a soft glass note each
+   time a new painting comes to the front. */
+const soundBtn = document.getElementById("sound");
+let snd = null, soundOn = false, lastChimeT = 0;
+function makeSound() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  const ctx = new AC();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass"; filter.frequency.value = 520; filter.Q.value = 0.7;
+  filter.connect(master);
+  const lfo = ctx.createOscillator(), lfoAmt = ctx.createGain();
+  lfo.frequency.value = 0.045; lfoAmt.gain.value = 260;
+  lfo.connect(lfoAmt).connect(filter.frequency); lfo.start();
+  [[55, "sine", 0.26], [82.41, "triangle", 0.08], [110.3, "sine", 0.1], [164.8, "sine", 0.03]].forEach(([f, type, g]) => {
+    const o = ctx.createOscillator(), og = ctx.createGain();
+    o.type = type; o.frequency.value = f; og.gain.value = g;
+    const wob = ctx.createOscillator(), wobAmt = ctx.createGain();
+    wob.frequency.value = 0.03 + Math.random() * 0.05; wobAmt.gain.value = g * 0.45;
+    wob.connect(wobAmt).connect(og.gain); wob.start();
+    o.connect(og).connect(filter); o.start();
+  });
+  return { ctx, master };
+}
+const SCALE = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22]; /* minor pentatonic above A3 */
+function chime(i, big) {
+  if (!soundOn || !snd) return;
+  const { ctx, master } = snd;
+  const t = ctx.currentTime;
+  if (!big && t - lastChimeT < 0.14) return; /* a fast spin doesn't become a hailstorm */
+  lastChimeT = t;
+  const f = 220 * Math.pow(2, SCALE[i % SCALE.length] / 12);
+  [1, 2.01, big ? 3.02 : 0].forEach((m, k) => {
+    if (!m) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine"; o.frequency.value = f * m;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime((big ? 0.5 : 0.28) / (k + 1), t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (big ? 3.2 : 1.6));
+    o.connect(g).connect(master);
+    o.start(t); o.stop(t + 3.4);
+  });
+}
+soundBtn.addEventListener("click", async () => {
+  if (!snd) snd = makeSound();
+  if (!snd) return;
+  soundOn = !soundOn;
+  const { ctx, master } = snd;
+  if (soundOn) await ctx.resume();
+  const t = ctx.currentTime;
+  master.gain.cancelScheduledValues(t);
+  master.gain.setValueAtTime(master.gain.value, t);
+  master.gain.linearRampToValueAtTime(soundOn ? 0.14 : 0, t + (soundOn ? 2.5 : 0.6));
+  if (!soundOn) setTimeout(() => { if (!soundOn) ctx.suspend(); }, 700);
+  soundBtn.setAttribute("aria-pressed", String(soundOn));
+  soundBtn.querySelector(".sound-label").textContent = soundOn ? "Sound on" : "Sound off";
+});
+document.addEventListener("visibilitychange", () => {
+  if (!snd || !soundOn) return;
+  if (document.hidden) snd.ctx.suspend(); else snd.ctx.resume();
+});
+
+/* ---------------- a small surprise ----------------
+   Fling the ring hard and the organism notices: veins burst out from the
+   center, the ring flares, and a line is whispered. Rests 15 seconds between. */
+const WHISPERS = ["you woke something up", "the veins remember you", "something on the other side waved back"];
+let lastSurprise = -Infinity, whisperN = 0, whisperTimer = 0;
+function surprise() {
+  const now = performance.now();
+  if (reduceMotion || now - lastSurprise < 15000) return;
+  lastSurprise = now;
+  const r = ring.getBoundingClientRect();
+  const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+  for (let k = 0; k < 28; k++) {
+    hyphae.push({ x: ox, y: oy, a: (k / 28) * Math.PI * 2 + Math.random() * 0.2, life: 200 + Math.random() * 220, gen: 1, c: k % 3 });
+  }
+  for (let k = 0; k < 60; k++) spore(ox + (Math.random() - 0.5) * r.width * 1.6, oy + (Math.random() - 0.5) * r.height, k % 3);
+  stage.classList.remove("woke"); void stage.offsetWidth; stage.classList.add("woke");
+  const w = document.getElementById("whisper");
+  w.textContent = WHISPERS[whisperN++ % WHISPERS.length];
+  w.classList.add("on");
+  clearTimeout(whisperTimer);
+  whisperTimer = setTimeout(() => w.classList.remove("on"), 4200);
+  chime(4, true);
+}
+
 /* ---------------- start ---------------- */
 let resizeTimer;
 window.addEventListener("resize", () => {
@@ -1356,6 +1737,22 @@ if (reduceMotion) {
   requestAnimationFrame(fieldLoop);
 }
 requestAnimationFrame(tick);
+
+/* arriving from a painting's link opens it straight away */
+const linked = workFromHash();
+if (linked >= 0) {
+  rot = target = -linked * STEP;
+  openExam(linked, true);
+}
+
+/* first visit: the ring turns a little on its own and comes back, so it's clear it moves */
+if (!coach.turned && !reduceMotion && linked < 0) {
+  setTimeout(() => {
+    if (coach.turned || dragging) return;
+    target -= STEP * 0.6;
+    setTimeout(() => { if (!coach.turned && !dragging) target += STEP * 0.6; }, 700);
+  }, 1400);
+}
 </script>
 </body>
 </html>
