@@ -696,6 +696,10 @@ footer.alive { cursor: crosshair; touch-action: none; }
 .orb { opacity: 0.85; }
 .orb:hover, .orb:focus-visible { transform: scale(2.1); opacity: 1; }
 @media (max-width: 560px) { .orb { left: auto; right: 8px; top: 122px; margin: 0; } }
+/* the second orb drifts in the quiet column below the contact details */
+.orb.orb-2 { left: auto; top: auto; right: max(28px, 14%); bottom: 34%; margin: 0; }
+.orb.orb-2 span { animation-duration: 9s; animation-delay: -5s; }
+@media (max-width: 760px) { .orb.orb-2 { right: 14px; bottom: 30px; } }
 .orb:hover span, .orb:focus-visible span { animation-play-state: paused; opacity: 1; background: #fff; }
 .orb:focus-visible { outline: 1px solid rgba(184, 77, 255, 0.8); outline-offset: 2px; }
 .vault {
@@ -794,7 +798,7 @@ footer.alive { cursor: crosshair; touch-action: none; }
       <i style="--x:74%;--y:79%;--s:7px;--d:9.5s;--dl:-3.5s"></i>
       <i style="--x:56%;--y:94%;--s:4px;--d:7s;--dl:-5.5s"></i>
     </div>
-    <button class="orb" id="orb" type="button" aria-label="A small glowing light"><span></span></button>
+    <button class="orb" id="orb" data-gallery="0" type="button" aria-label="A small glowing light"><span></span></button>
     <div class="glow" id="index-glow" aria-hidden="true"></div>
     <div class="band-inner">
       <p class="eyebrow" id="index-count"></p>
@@ -804,6 +808,7 @@ footer.alive { cursor: crosshair; touch-action: none; }
   </section>
 
   <section class="band" id="about" aria-labelledby="about-title">
+    <button class="orb orb-2" id="orb-2" data-gallery="1" type="button" aria-label="A small glowing light"><span></span></button>
     <div class="band-inner about-grid">
       <div class="bio">
         <p class="eyebrow">American surrealist artist · Painting · Photography · Experimental visual art</p>
@@ -898,24 +903,47 @@ const WORKS = [
   { title: "Cloud Valley", year: "", medium: "", size: "", note: "", src: "cloud-valley.jpg" }
 ];
 
-/* THE HIDDEN GALLERY
-   Opened by the tiny violet orb beside "Index of the collection".
-   Not listed in the index, the ring, the share pages or the sitemap.
-   - name: shown at the top of the hidden gallery ("" shows just "Hidden gallery")
+/* THE HIDDEN GALLERIES
+   Each one opens from a tiny violet orb and is left out of the index, the
+   ring, the share pages and the sitemap.
+   1st: the orb beside "Index of the collection"
+   2nd: the orb below the contact details in the About section
+   - name: shown at the top of the gallery ("" shows just "Hidden gallery")
    - title, year: optional, like the main list */
-const HIDDEN = {
-  name: "",
-  works: [
-    { title: "Untitled", year: "", src: WP + "2025/02/a6ff0-img_0536.jpg" },
-    { title: "Untitled", year: "", src: WP + "2025/02/939dc-img_1984.jpg" },
-    { title: "Untitled", year: "", src: WP + "2025/02/d312f-img_4082.jpg" },
-    { title: "Complex Daydream", year: "", src: WP + "2022/10/complex_daydream.jpg" },
-    { title: "Untitled", year: "", src: WP + "2022/02/20210628_220557.jpg" },
-    { title: "Untitled", year: "", src: WP + "2021/02/img_07001.jpg" },
-    { title: "Untitled", year: "", src: WP + "2021/02/img_8457.jpg" },
-    { title: "A Trip in the Mountains", year: "", src: WP + "2020/12/a-trip-in-the-mountains-camicamirobot.png" }
-  ]
-};
+const HIDDEN = [
+  {
+    name: "",
+    works: [
+      { title: "Untitled", year: "", src: WP + "2025/02/a6ff0-img_0536.jpg" },
+      { title: "Untitled", year: "", src: WP + "2025/02/939dc-img_1984.jpg" },
+      { title: "Untitled", year: "", src: WP + "2025/02/d312f-img_4082.jpg" },
+      { title: "Complex Daydream", year: "", src: WP + "2022/10/complex_daydream.jpg" },
+      { title: "Untitled", year: "", src: WP + "2022/02/20210628_220557.jpg" },
+      { title: "Untitled", year: "", src: WP + "2021/02/img_07001.jpg" },
+      { title: "Untitled", year: "", src: WP + "2021/02/img_8457.jpg" },
+      { title: "A Trip in the Mountains", year: "", src: WP + "2020/12/a-trip-in-the-mountains-camicamirobot.png" }
+    ]
+  },
+  {
+    name: "",
+    works: [
+      { title: "Untitled", year: "", src: WP + "2025/02/3274c-img_7831.jpg" },
+      { title: "Untitled", year: "", src: WP + "2025/02/852b9-img_7064.png" },
+      { title: "Luna Moth and Morning Glory", year: "", src: WP + "2025/02/75756-lunamoth-morningglory.png" },
+      { title: "Untitled", year: "", src: WP + "2025/02/25d84-img_2395.png" },
+      { title: "Untitled", year: "", src: WP + "2025/02/281a8-img_20190112_193106246-1.jpg" },
+      { title: "Untitled", year: "", src: WP + "2022/02/20210817_180115.jpg" },
+      { title: "Untitled", year: "", src: WP + "2022/02/img_8249.jpg" },
+      { title: "Untitled", year: "", src: WP + "2021/02/img_0686.jpg" },
+      { title: "Untitled", year: "", src: WP + "2021/01/20201120_220944.jpg" },
+      { title: "Untitled", year: "", src: WP + "2020/10/6e4e5-img_20191105_170043071.jpg" },
+      { title: "Untitled", year: "", src: WP + "2020/10/80192-1960.jpg" },
+      { title: "Untitled", year: "", src: WP + "2020/10/375f0-img_20190127_212008876.jpg" },
+      { title: "Untitled", year: "", src: WP + "2020/10/be403-img_20190121_180819795.jpg" },
+      { title: "Medusa", year: "", src: WP + "2020/10/66345-medusa.jpg" }
+    ]
+  }
+];
 
 /* WordPress can resize (and crop, in percent: x,y,w,h) on the fly.
    Local files: the ring and index use the small "-sm.jpg" copy; the close-up view uses the full file. */
@@ -1344,33 +1372,41 @@ exam.addEventListener("click", e => {
   if (e.target === exam || e.target.id === "exam-art") closeExam();
 });
 
-/* ---------------- the hidden gallery ----------------
-   The orb blooms open into a violet room holding the HIDDEN works.
-   Its address is #/hidden/1, #/hidden/2 ... so it can be passed on once found. */
+/* ---------------- the hidden galleries ----------------
+   Each orb blooms open into a violet room holding one of the HIDDEN galleries.
+   Addresses: #/hidden/1, #/hidden/2 ... for the first gallery's works and
+   #/hidden-2/1 ... for the second's, so a found gallery can be passed on. */
 const vault = document.getElementById("vault");
-const orbBtn = document.getElementById("orb");
-const VN = HIDDEN.works.length;
-let vIndex = 0, vPushed = false, vReturn = null;
-document.getElementById("vault-name").textContent = HIDDEN.name ? "Hidden gallery · " + HIDDEN.name : "Hidden gallery";
+const orbs = [...document.querySelectorAll(".orb")];
 const vStrip = document.getElementById("vault-strip");
-const vThumbs = HIDDEN.works.map((w, i) => {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.setAttribute("aria-label", pad(i + 1) + " " + w.title);
-  b.appendChild(makeImg(w, 160));
-  b.addEventListener("click", () => showVault(i));
-  vStrip.appendChild(b);
-  return b;
-});
+let vG = 0, vIndex = 0, vPushed = false, vReturn = null, vThumbs = [];
+const vWorks = () => HIDDEN[vG].works;
+const vHash = (g, i) => "#/hidden" + (g ? "-" + (g + 1) : "") + "/" + (i + 1);
+function setGallery(g) {
+  if (vThumbs.length && g === vG) return;
+  vG = g;
+  const h = HIDDEN[g];
+  document.getElementById("vault-name").textContent = h.name ? "Hidden gallery · " + h.name : "Hidden gallery";
+  vStrip.innerHTML = "";
+  vThumbs = h.works.map((w, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-label", pad(i + 1) + " " + w.title);
+    b.appendChild(makeImg(w, 160));
+    b.addEventListener("click", () => showVault(i));
+    vStrip.appendChild(b);
+    return b;
+  });
+}
 function fillVault(i) {
   vIndex = i;
-  const w = HIDDEN.works[i];
+  const w = vWorks()[i], n = vWorks().length;
   const art = document.getElementById("vault-art");
   art.innerHTML = "";
   const img = makeImg(w, 1600);
   img.loading = "eager";
   art.appendChild(img);
-  document.getElementById("vault-cat").textContent = "No. " + pad(i + 1) + " of " + pad(VN) + (w.year ? " · " + w.year : "");
+  document.getElementById("vault-cat").textContent = "No. " + pad(i + 1) + " of " + pad(n) + (w.year ? " · " + w.year : "");
   document.getElementById("vault-title").textContent = w.title;
   vThumbs.forEach((t, k) => t.setAttribute("aria-current", k === i ? "true" : "false"));
   const t = vThumbs[i];
@@ -1378,19 +1414,23 @@ function fillVault(i) {
   document.title = w.title + " · camicamirobot";
 }
 function vaultFromHash() {
-  const m = location.hash.match(/^#\/hidden(?:\/(\d+))?$/);
-  if (!m) return -1;
-  return Math.min(Math.max((parseInt(m[1] || "1", 10) || 1) - 1, 0), VN - 1);
+  const m = location.hash.match(/^#\/hidden(?:-(\d+))?(?:\/(\d+))?$/);
+  if (!m) return null;
+  const g = m[1] ? parseInt(m[1], 10) - 1 : 0;
+  if (!(g >= 0 && g < HIDDEN.length)) return null;
+  const n = HIDDEN[g].works.length;
+  return { g, i: Math.min(Math.max((parseInt(m[2] || "1", 10) || 1) - 1, 0), n - 1) };
 }
-function showVault(i) { fillVault(i); history.replaceState({ vault: i }, "", "#/hidden/" + (i + 1)); }
-function openVault(i, fromHistory) {
+function showVault(i) { fillVault(i); history.replaceState({ vault: i }, "", vHash(vG, i)); }
+function openVault(g, i, fromHistory) {
   vReturn = document.activeElement;
-  const r = orbBtn.getBoundingClientRect();
+  const r = (orbs[g] || orbs[0]).getBoundingClientRect();
   vault.style.setProperty("--ox", Math.round(r.left + r.width / 2) + "px");
   vault.style.setProperty("--oy", Math.round(r.top + r.height / 2) + "px");
   vault.hidden = false;
+  setGallery(g);
   fillVault(i);
-  if (!fromHistory) { history.pushState({ vault: i }, "", "#/hidden/" + (i + 1)); vPushed = true; }
+  if (!fromHistory) { history.pushState({ vault: i }, "", vHash(g, i)); vPushed = true; }
   vault.classList.remove("opening"); void vault.offsetWidth;
   if (!reduceMotion) vault.classList.add("opening");
   document.body.style.overflow = "hidden";
@@ -1407,20 +1447,21 @@ function closeVault(fromHistory) {
   if (vPushed) { vPushed = false; history.back(); }
   else history.replaceState(null, "", location.pathname + location.search);
 }
-orbBtn.addEventListener("click", () => openVault(0));
+orbs.forEach(o => o.addEventListener("click", () => openVault(Number(o.dataset.gallery) || 0, 0)));
 document.getElementById("vault-close").addEventListener("click", () => closeVault());
-document.getElementById("vault-prev").addEventListener("click", () => showVault((vIndex - 1 + VN) % VN));
-document.getElementById("vault-next").addEventListener("click", () => showVault((vIndex + 1) % VN));
+document.getElementById("vault-prev").addEventListener("click", () => showVault((vIndex - 1 + vWorks().length) % vWorks().length));
+document.getElementById("vault-next").addEventListener("click", () => showVault((vIndex + 1) % vWorks().length));
 document.addEventListener("keydown", e => {
   if (vault.hidden) return;
+  const n = vWorks().length;
   if (e.key === "Escape") closeVault();
-  if (e.key === "ArrowRight") showVault((vIndex + 1) % VN);
-  if (e.key === "ArrowLeft") showVault((vIndex - 1 + VN) % VN);
+  if (e.key === "ArrowRight") showVault((vIndex + 1) % n);
+  if (e.key === "ArrowLeft") showVault((vIndex - 1 + n) % n);
 });
 window.addEventListener("popstate", () => {
   const v = vaultFromHash();
-  if (v < 0) { vPushed = false; closeVault(true); return; }
-  if (vault.hidden) { openVault(v, true); vPushed = false; } else fillVault(v);
+  if (!v) { vPushed = false; closeVault(true); return; }
+  if (vault.hidden) { openVault(v.g, v.i, true); vPushed = false; } else { setGallery(v.g); fillVault(v.i); }
 });
 /* swipe left or right on the painting to move through the hidden works */
 const vArt = document.getElementById("vault-art");
@@ -1428,9 +1469,9 @@ let vSwipe = null;
 vArt.addEventListener("pointerdown", e => { vSwipe = { x: e.clientX, y: e.clientY, id: e.pointerId }; });
 vArt.addEventListener("pointerup", e => {
   if (!vSwipe || e.pointerId !== vSwipe.id) return;
-  const dx = e.clientX - vSwipe.x, dy = e.clientY - vSwipe.y;
+  const dx = e.clientX - vSwipe.x, dy = e.clientY - vSwipe.y, n = vWorks().length;
   vSwipe = null;
-  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) showVault((vIndex + (dx < 0 ? 1 : -1) + VN) % VN);
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) showVault((vIndex + (dx < 0 ? 1 : -1) + n) % n);
 });
 vArt.addEventListener("pointercancel", () => { vSwipe = null; });
 
@@ -2324,10 +2365,10 @@ if (linked >= 0) {
   openExam(linked, true);
 }
 const vLinked = vaultFromHash();
-if (vLinked >= 0) openVault(vLinked, true);
+if (vLinked) openVault(vLinked.g, vLinked.i, true);
 
 /* first visit: the ring turns a little on its own and comes back, so it's clear it moves */
-if (!coach.turned && !reduceMotion && linked < 0 && vLinked < 0) {
+if (!coach.turned && !reduceMotion && linked < 0 && !vLinked) {
   setTimeout(() => {
     if (coach.turned || dragging) return;
     target -= STEP * 0.6;
