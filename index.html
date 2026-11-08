@@ -495,6 +495,21 @@ footer p {
   transform-origin: 50% 0%;
 }
 #lungs.breathing, #sparks.breathing { animation: breathe 6.5s ease-in-out infinite; }
+footer.alive { cursor: crosshair; }
+.footer-hint {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+  font-family: var(--f-label);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.footer-hint.on { opacity: 0.85; }
 @keyframes breathe {
   0%, 100% { transform: scale(1, 1); opacity: 0.68; }
   45% { transform: scale(1.025, 1.045); opacity: 0.8; } /* the whole layer never goes past 80% */
@@ -818,6 +833,7 @@ footer p {
 <footer class="lungs">
   <canvas id="lungs" aria-hidden="true"></canvas>
   <canvas id="sparks" aria-hidden="true"></canvas>
+  <span class="footer-hint" id="footer-hint" aria-hidden="true"></span>
   <p>© <span id="year"></span> <span class="wm-p">camicami</span><span class="wm-t">robot</span></p>
 </footer>
 
@@ -1763,20 +1779,21 @@ function buildLungs() {
   const maxDepth = lungW < 600 ? 8 : 10;
   const veil = mulberry32(7); /* each stroke's own transparency */
 
-  function branch(rnd, x, y, a, len, wd, d, c) {
+  function branch(rnd, x, y, a, len, wd, d, c, parent) {
     const ex = x + Math.cos(a) * len, ey = y + Math.sin(a) * len;
     const bend = (rnd() - 0.5) * len * 0.35;
     const qx = (x + ex) / 2 + Math.cos(a + Math.PI / 2) * bend;
     const qy = (y + ey) / 2 + Math.sin(a + Math.PI / 2) * bend;
     const alpha = (0.36 - (d / maxDepth) * 0.24) * (0.4 + veil() * 0.6) * (c === 0 ? 0.75 : 1);
-    lungSegs.push({ x, y, qx, qy, ex, ey, wd: wd * 0.85, d, c, alpha });
+    const seg = { x, y, qx, qy, ex, ey, wd: wd * 0.85, d, c, alpha, parent, vessel: true };
+    lungSegs.push(seg);
     lungMaxD = Math.max(lungMaxD, d);
     if (d >= maxDepth || len < 3) { lungTips.push({ x: ex, y: ey, c }); return; }
     const spread = 0.34 + rnd() * 0.3;
     const lean = rnd();
     const f = 0.72 + rnd() * 0.12;
-    branch(rnd, ex, ey, a - spread * (0.55 + lean * 0.7), len * f, wd * 0.7, d + 1, c);
-    branch(rnd, ex, ey, a + spread * (0.55 + (1 - lean) * 0.7), len * (f - 0.04 + rnd() * 0.08), wd * 0.7, d + 1, c);
+    branch(rnd, ex, ey, a - spread * (0.55 + lean * 0.7), len * f, wd * 0.7, d + 1, c, seg);
+    branch(rnd, ex, ey, a + spread * (0.55 + (1 - lean) * 0.7), len * (f - 0.04 + rnd() * 0.08), wd * 0.7, d + 1, c, seg);
   }
 
   /* the trachea hangs from the top edge and the bronchi fan down and out, like lungs */
@@ -1786,13 +1803,14 @@ function buildLungs() {
   [[2, 0, 0.0], [1, 11, 0.07]].forEach(([c, seedOff, offset]) => {
     const rnd = mulberry32(42 + seedOff);
     const ox = offset * 40 * scale;
-    lungSegs.push({ x: cxm + ox, y: -6, qx: cxm + ox, qy: carina / 2, ex: cxm + ox, ey: carina, wd: 5 * scale, d: 0, c, alpha: 0.24 });
-    branch(rnd, cxm + ox, carina, Math.PI / 2 + 0.78 + offset, 70 * scale, 6.5 * scale, 1, c);
-    branch(rnd, cxm + ox, carina, Math.PI / 2 - 0.78 + offset, 70 * scale, 6.5 * scale, 1, c);
+    const root = { x: cxm + ox, y: -6, qx: cxm + ox, qy: carina / 2, ex: cxm + ox, ey: carina, wd: 5 * scale, d: 0, c, alpha: 0.24, parent: null, vessel: true };
+    lungSegs.push(root);
+    branch(rnd, cxm + ox, carina, Math.PI / 2 + 0.78 + offset, 70 * scale, 6.5 * scale, 1, c, root);
+    branch(rnd, cxm + ox, carina, Math.PI / 2 - 0.78 + offset, 70 * scale, 6.5 * scale, 1, c, root);
   });
   /* smaller vessel trees climbing in from the lower corners */
   [[0.06, -1.05, 0], [0.94, -2.09, 0], [0.24, -1.35, 1], [0.76, -1.79, 2]].forEach(([fx, a, c], i) => {
-    branch(mulberry32(90 + i), lungW * fx, lungH + 4, a, 48 * scale, 4 * scale, 2, c);
+    branch(mulberry32(90 + i), lungW * fx, lungH + 4, a, 48 * scale, 4 * scale, 2, c, null);
   });
 
   /* nerve cells, kept off the centre where the copyright line sits */
@@ -1830,7 +1848,9 @@ function buildLungs() {
         poly.push([x + (bx - x) * t - Math.sin(ang) * w, y + (by - y) * t + Math.cos(ang) * w]);
       }
       lungSegs.push({ poly, wd: 0.75, d: nerveD + 1, c, alpha: 0.16 + nr() * 0.2 });
-      synapses.push({ pts: poly.concat([[best.x, best.y]]), cleft: [bx, by, best.x, best.y], c, ends: [[bx, by]] });
+      const syn = { pts: poly.concat([[best.x, best.y]]), cleft: [bx, by, best.x, best.y], c, ends: [[bx, by]] };
+      synapses.push(syn);
+      neurons[neurons.length - 1].syn = syn;
     }
   }
   /* where a cyan tip and a magenta tip nearly touch, a dotted synapse joins them */
@@ -1928,42 +1948,156 @@ function growLungs() {
     const eased = 1 - Math.pow(1 - p, 2.2);
     drawLungsTo(p === 1 ? Infinity : -8 + eased * (lungH + 16));
     if (p < 1) requestAnimationFrame(frame);
-    else { lungGrown = true; lv.classList.add("breathing"); kv.classList.add("breathing"); startSparks(); }
+    else { lungGrown = true; lv.classList.add("breathing"); kv.classList.add("breathing"); footerEl.classList.add("alive"); startSparks(); showFooterHint(); }
   })(t0);
 }
-/* sparks: a pale point of light now and then crosses a synapse */
-let sparks = [], sparkRaf = 0, footerSeen = false, nextSpark = 0;
-function startSparks() { if (!sparkRaf && footerSeen && lungGrown && !reduceMotion) sparkRaf = requestAnimationFrame(sparkLoop); }
-function sparkLoop(now) {
-  sparkRaf = 0;
+/* ---------------- the footer comes alive ----------------
+   Once it has grown, the footer answers the visitor:
+   - near a nerve cell, the cell warms up and fires a spark down its axon
+   - passing over a vessel sends a pulse up that branch toward the airway
+   - a click or tap sends a ring outward that fires every synapse it crosses
+   Sparks also cross the synapses now and then on their own. */
+const footerEl = document.querySelector("footer");
+const footerHint = document.getElementById("footer-hint");
+footerHint.textContent = coarse ? "drag through it · tap to send a signal" : "move through it · click to send a signal";
+let sparks = [], traces = [], ripples = [], footerRaf = 0, footerSeen = false, nextSpark = 0;
+let fPointer = null, lastTraceSeg = null, lastTraceAt = 0, hintTimer = 0;
+function toFooter(e) {
+  const r = lv.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * lungW / r.width, y: (e.clientY - r.top) * lungH / r.height };
+}
+function glow(x, y, r, c, a) {
+  const g = kx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, "rgba(236,230,220," + Math.min(0.6, a).toFixed(3) + ")");
+  g.addColorStop(0.3, tint(c, a * 0.65));
+  g.addColorStop(1, tint(c, 0));
+  kx.fillStyle = g;
+  kx.beginPath(); kx.arc(x, y, r, 0, Math.PI * 2); kx.fill();
+}
+function along(pts, f) {
+  const i = Math.max(0, Math.min(pts.length - 1.001, f * (pts.length - 1)));
+  const j = Math.floor(i), u = i - j, a = pts[j], b = pts[j + 1] || a;
+  return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+}
+function spark(s, speed) { sparks.push({ s, t: 0, sp: speed || 0.007 + Math.random() * 0.012, back: !speed && Math.random() < 0.5 }); }
+function fire(n) {
+  n.ex = 0.35;
+  if (n.syn) spark(n.syn, 0.018);
+  chime(Math.floor((n.x / lungW) * 8));
+}
+/* a pulse that starts at the vessel under the pointer and climbs to the airway */
+function traceFrom(seg) {
+  const pts = [];
+  for (let s = seg; s; s = s.parent) {
+    const q = sampleQuad(s.ex, s.ey, s.qx, s.qy, s.x, s.y, 5);
+    if (pts.length) q.shift();
+    pts.push(...q);
+  }
+  traces.push({ pts, t: 0, c: seg.c });
+  if (traces.length > 8) traces.shift();
+}
+function showFooterHint() {
+  if (reduceMotion) return;
+  footerHint.classList.add("on");
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => footerHint.classList.remove("on"), 7000);
+}
+function hideFooterHint() { clearTimeout(hintTimer); footerHint.classList.remove("on"); }
+function startSparks() { if (!footerRaf && footerSeen && lungGrown && !reduceMotion) footerRaf = requestAnimationFrame(footerLoop); }
+function footerLoop(now) {
+  footerRaf = 0;
   kx.clearRect(0, 0, lungW, lungH);
-  if (!footerSeen || !synapses.length) { sparks = []; return; }
-  if (now > nextSpark) {
-    sparks.push({ s: synapses[Math.floor(Math.random() * synapses.length)], t: 0, sp: 0.007 + Math.random() * 0.012, back: Math.random() < 0.5 });
+  if (!footerSeen) { sparks = []; traces = []; ripples = []; return; }
+  if (synapses.length && now > nextSpark) {
+    spark(synapses[Math.floor(Math.random() * synapses.length)]);
     nextSpark = now + 450 + Math.random() * 1500;
   }
+  /* nerve cells near the pointer warm up, then fire */
+  if (fPointer) for (const n of neurons) {
+    const d = Math.hypot(n.x - fPointer.x, n.y - fPointer.y);
+    if (d < 90) { n.ex = (n.ex || 0) + 0.045 * (1 - d / 90); if (n.ex >= 1) fire(n); }
+  }
+  for (const n of neurons) if (n.ex > 0.02) { glow(n.x, n.y, n.r * 7, n.c, 0.42 * Math.min(1, n.ex)); n.ex *= 0.975; }
+  /* signal rings from a click or tap */
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const rp = ripples[i];
+    rp.r += 5;
+    if (rp.r > rp.max) { ripples.splice(i, 1); continue; }
+    const fade = 1 - rp.r / rp.max;
+    kx.lineWidth = 1.2;
+    kx.strokeStyle = tint(2, 0.3 * fade);
+    kx.beginPath(); kx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); kx.stroke();
+    kx.strokeStyle = tint(1, 0.16 * fade);
+    kx.beginPath(); kx.arc(rp.x, rp.y, Math.max(0, rp.r - 9), 0, Math.PI * 2); kx.stroke();
+    for (const s of synapses) {
+      if (rp.hit.has(s)) continue;
+      if (Math.hypot(s.pts[0][0] - rp.x, s.pts[0][1] - rp.y) < rp.r) { rp.hit.add(s); spark(s, 0.022); }
+    }
+    for (const n of neurons) {
+      if (rp.hit.has(n)) continue;
+      if (Math.hypot(n.x - rp.x, n.y - rp.y) < rp.r) { rp.hit.add(n); n.ex = 1; }
+    }
+  }
+  /* pulses climbing the vessels, each with a fading tail */
+  kx.lineCap = "round";
+  for (let i = traces.length - 1; i >= 0; i--) {
+    const tr = traces[i], L = tr.pts.length - 1;
+    tr.t += 1.6 / L;
+    if (tr.t >= 1.2) { traces.splice(i, 1); continue; }
+    const head = Math.min(L, tr.t * L);
+    const out = tr.t > 1 ? 1 - (tr.t - 1) / 0.2 : 1;
+    for (let k = 0; k < 18; k++) {
+      const a = head - k, b = a - 1;
+      if (b < 0) break;
+      const p = along(tr.pts, a / L), q = along(tr.pts, b / L);
+      kx.strokeStyle = tint(tr.c, 0.5 * (1 - k / 18) * out);
+      kx.lineWidth = Math.max(0.4, 1.7 - k * 0.07);
+      kx.beginPath(); kx.moveTo(p[0], p[1]); kx.lineTo(q[0], q[1]); kx.stroke();
+    }
+    if (tr.t <= 1) { const p = along(tr.pts, tr.t); glow(p[0], p[1], 8, tr.c, 0.45); }
+  }
+  /* sparks crossing synapses */
   for (let i = sparks.length - 1; i >= 0; i--) {
     const k = sparks[i];
     k.t += k.sp;
     if (k.t >= 1) { sparks.splice(i, 1); continue; }
-    const pts = k.s.pts;
-    const f = (k.back ? 1 - k.t : k.t) * (pts.length - 1);
-    const j = Math.floor(f), u = f - j, a = pts[j], b = pts[Math.min(j + 1, pts.length - 1)];
-    const x = a[0] + (b[0] - a[0]) * u, y = a[1] + (b[1] - a[1]) * u;
-    const fade = Math.sin(k.t * Math.PI);
-    const g = kx.createRadialGradient(x, y, 0, x, y, 7);
-    g.addColorStop(0, "rgba(236,230,220," + (0.55 * fade).toFixed(3) + ")");
-    g.addColorStop(0.3, tint(k.s.c, 0.35 * fade));
-    g.addColorStop(1, tint(k.s.c, 0));
-    kx.fillStyle = g;
-    kx.beginPath(); kx.arc(x, y, 7, 0, Math.PI * 2); kx.fill();
+    const [x, y] = along(k.s.pts, k.back ? 1 - k.t : k.t);
+    glow(x, y, 7, k.s.c, 0.55 * Math.sin(k.t * Math.PI));
   }
-  sparkRaf = requestAnimationFrame(sparkLoop);
+  footerRaf = requestAnimationFrame(footerLoop);
 }
+footerEl.addEventListener("pointermove", e => {
+  if (!lungGrown || reduceMotion) return;
+  fPointer = toFooter(e);
+  const now = performance.now();
+  if (now - lastTraceAt > 200) {
+    let best = null, bd = 18;
+    for (const s of lungSegs) {
+      if (!s.vessel) continue;
+      const d = Math.hypot(s.qx - fPointer.x, s.qy - fPointer.y);
+      if (d < bd) { bd = d; best = s; }
+    }
+    if (best && best !== lastTraceSeg) { traceFrom(best); lastTraceSeg = best; lastTraceAt = now; }
+  }
+  if (e.pointerType === "mouse" && Math.abs(e.movementX) + Math.abs(e.movementY) > 0) hideFooterHint();
+}, { passive: true });
+footerEl.addEventListener("pointerleave", () => { fPointer = null; });
+footerEl.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") fPointer = null; });
+footerEl.addEventListener("pointercancel", () => { fPointer = null; });
+footerEl.addEventListener("click", e => {
+  if (!lungGrown || reduceMotion) return;
+  const p = toFooter(e);
+  ripples.push({ x: p.x, y: p.y, r: 0, max: Math.hypot(lungW, lungH) * 0.65, hit: new Set() });
+  chime(5 + Math.floor(Math.random() * 4), true);
+  hideFooterHint();
+});
+/* it grows once the footer is properly in view, not as it first peeks in */
 new IntersectionObserver(entries => {
-  footerSeen = entries.some(e => e.isIntersecting);
-  if (footerSeen) { growLungs(); startSparks(); }
-}, { threshold: 0.15 }).observe(lv);
+  const e = entries[entries.length - 1];
+  footerSeen = e.isIntersecting;
+  if (e.intersectionRatio >= 0.6) growLungs();
+  if (footerSeen) startSparks();
+}, { threshold: [0, 0.6] }).observe(footerEl);
 
 /* ---------------- sound ----------------
    Off until the visitor turns it on. Everything is synthesized in the browser
