@@ -759,6 +759,69 @@ footer.grown .orb.orb-3:hover, footer.grown .orb.orb-3:focus-visible { opacity: 
   .vault.opening { animation: none; }
   .orb span { animation: none; }
 }
+
+/* ---------- index filters ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: 10px; margin: calc(-1 * clamp(32px, 5vw, 70px)) 0 clamp(48px, 7vw, 90px); font-family: var(--f-label); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.filters button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 15px; border: 1px solid var(--line); border-radius: 999px; background: rgba(34, 31, 40, 0.6); color: var(--dim); cursor: pointer; transition: color .25s, border-color .25s, background .25s, box-shadow .25s; }
+.filters button:hover { color: var(--bone); border-color: rgba(236, 230, 220, 0.4); }
+.filters button[aria-pressed="true"] { color: var(--gold); border-color: var(--gold); background: rgba(195, 219, 9, 0.08); box-shadow: 0 0 14px rgba(195, 219, 9, 0.18); }
+.filters b { font-weight: 500; color: var(--bone); opacity: .6; font-variant-numeric: tabular-nums; }
+.index li.filtered-out { display: none; }
+.filters button[disabled] { opacity: .35; cursor: default; }
+.index li.filter-in { animation: filter-in .55s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes filter-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ---------- magnifying lens in the close-up view ---------- */
+.lens { position: fixed; z-index: 3; left: 0; top: 0; width: 190px; height: 190px; border-radius: 50%; pointer-events: none; opacity: 0; transform: scale(.6); transition: opacity .18s ease, transform .18s ease; border: 1.5px solid var(--gold); box-shadow: 0 0 0 1px rgba(23, 21, 27, 0.6), 0 0 28px rgba(195, 219, 9, 0.35), 0 18px 50px rgba(0, 0, 0, 0.6); background-repeat: no-repeat; background-color: var(--void); }
+.lens.on { opacity: 1; transform: scale(1); }
+.exam-art.lensing img { cursor: none; }
+.exam-art img { cursor: zoom-in; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.exam-art { touch-action: none; }
+@media (pointer: coarse) { .lens { width: 150px; height: 150px; } .exam-art img { cursor: auto; } }
+.lens-tip { margin: 0; font-family: var(--f-label); font-size: 11px; letter-spacing: 0.1em; color: var(--dim); }
+
+
+/* filters on the ring */
+.ring-filters { position: absolute; z-index: 3; top: calc(78px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); margin: 0; justify-content: center; width: max-content; max-width: calc(100% - 32px); }
+@media (max-width: 560px) { .ring-filters { top: calc(70px + env(safe-area-inset-top, 0px)); gap: 6px; } .ring-filters button { min-height: 32px; padding: 0 11px; font-size: 10px; } }
+.card { transition: border-color .3s, opacity .6s ease; }
+.card.filtered-out { pointer-events: none; }
+.card.filtered-out .art, .card.filtered-out .tag { filter: grayscale(1) brightness(.35); }
+.tick.filtered-out { display: none; }
+
+/* 3D tilt and a light halo that follows the cursor on the cards */
+.card .art, .card .tag { transition: transform .6s cubic-bezier(.2, .7, .2, 1), filter .6s ease; transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(var(--tz, 0px)); }
+.card.tilting .art, .card.tilting .tag { transition: transform .08s linear, filter .6s ease; }
+.card::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s ease; background: radial-gradient(circle at var(--hx, 50%) var(--hy, 40%), rgba(236, 230, 220, 0.22), rgba(245, 9, 131, 0.10) 28%, transparent 60%); mix-blend-mode: screen; }
+.card.tilting::before { opacity: 1; }
+.card.tilting { box-shadow: 0 0 30px rgba(245, 9, 131, 0.28), 0 0 70px rgba(37, 200, 222, 0.12); }
+
+/* close-up view: ways of looking, and the chord */
+.views { display: flex; gap: 6px; font-family: var(--f-label); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; }
+.views button { flex: 1; min-height: 38px; padding: 0 8px; border: 1px solid var(--line); border-radius: 4px; background: none; color: var(--dim); cursor: pointer; transition: all .2s; }
+.views button:hover { color: var(--bone); }
+.views button[aria-pressed="true"] { border-color: var(--cyan); color: var(--cyan); background: rgba(37, 200, 222, 0.08); }
+.view-note { margin: -8px 0 0; font-family: var(--f-label); font-size: 11px; color: var(--dim); min-height: 1.4em; }
+.exam-art img { transition: filter .45s ease, background-color .45s ease; }
+.exam-art[data-view="line"] img { filter: url(#f-line); background: #f3eee4; }
+.exam-art[data-view="color"] img { filter: url(#f-color); }
+.signature { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 6px; font-family: var(--f-label); font-size: 11px; }
+.sig-k { color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; }
+.sig-v { color: var(--gold); flex: 1; }
+.sig-play { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: none; color: var(--bone); cursor: pointer; font-size: 11px; display: grid; place-items: center; }
+.sig-play:hover { border-color: var(--gold); color: var(--gold); }
+.sig-play.on { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 14px rgba(195, 219, 9, 0.35); }
+@media (prefers-reduced-motion: reduce) { .card .art, .card .tag { transition: none; transform: none; } }
+
+/* the About section's rising branches, and the small neuron beside the ring */
+#about { overflow: clip; }
+#about-neural { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .7; }
+.hero-neuron { position: absolute; z-index: 0; left: clamp(12px, 4.5vw, 82px); top: 24%; width: clamp(96px, 15vw, 190px); height: clamp(96px, 15vw, 190px); pointer-events: none; opacity: .75; filter: drop-shadow(0 0 12px rgba(37, 200, 222, .25)); }
+@media (max-width: 560px) { .hero-neuron { top: 15%; opacity: .45; } #about-neural { opacity: .55; } }
+
+/* ---------- scroll line: a vein that grows down the right edge as you scroll ---------- */
+#scroll-veins { position: fixed; top: 0; right: max(2px, env(safe-area-inset-right, 0px)); width: 22px; height: 100vh; z-index: 35; pointer-events: none; opacity: .85; }
+@media (max-width: 560px) { #scroll-veins { width: 14px; opacity: .7; } }
 </style>
 </head>
 <body>
@@ -766,6 +829,20 @@ footer.grown .orb.orb-3:hover, footer.grown .orb.orb-3:focus-visible { opacity: 
 <canvas id="field" aria-hidden="true"></canvas>
 <canvas id="motes" aria-hidden="true"></canvas>
 <canvas id="swarm" aria-hidden="true"></canvas>
+<canvas id="scroll-veins" aria-hidden="true"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="f-line" color-interpolation-filters="sRGB">
+    <feColorMatrix type="saturate" values="0"/>
+    <feConvolveMatrix order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" preserveAlpha="true"/>
+    <feComponentTransfer><feFuncR type="linear" slope="-3.2" intercept="1"/><feFuncG type="linear" slope="-3.2" intercept="1"/><feFuncB type="linear" slope="-3.2" intercept="1"/></feComponentTransfer>
+    <feComponentTransfer><feFuncR type="gamma" exponent="1.6"/><feFuncG type="gamma" exponent="1.6"/><feFuncB type="gamma" exponent="1.6"/></feComponentTransfer>
+  </filter>
+  <filter id="f-color" color-interpolation-filters="sRGB">
+    <feGaussianBlur stdDeviation="2.4"/>
+    <feColorMatrix type="saturate" values="1.7"/>
+    <feComponentTransfer><feFuncR type="discrete" tableValues="0 .25 .5 .75 1"/><feFuncG type="discrete" tableValues="0 .25 .5 .75 1"/><feFuncB type="discrete" tableValues="0 .25 .5 .75 1"/></feComponentTransfer>
+  </filter>
+</svg>
 
 <header class="top">
   <a class="mark" href="#top" aria-label="camicamirobot, back to the collection"><span class="wm-p">camicami</span><span class="wm-t">robot</span></a>
@@ -780,6 +857,7 @@ footer.grown .orb.orb-3:hover, footer.grown .orb.orb-3:focus-visible { opacity: 
 <main>
   <section class="stage" id="top" aria-label="The collection, arranged on a turning ring" tabindex="0">
     <div class="flare" aria-hidden="true"></div>
+    <div class="filters ring-filters" data-filters role="group" aria-label="Show only one kind of work on the ring" hidden></div>
     <div class="ring-wrap">
       <div class="ring" id="ring"></div>
     </div>
@@ -814,6 +892,7 @@ footer.grown .orb.orb-3:hover, footer.grown .orb.orb-3:focus-visible { opacity: 
     <div class="band-inner">
       <p class="eyebrow" id="index-count"></p>
       <h2 id="index-title">Index of the collection</h2>
+      <div class="filters" data-filters role="group" aria-label="Show only one kind of work" hidden></div>
       <ul class="index" id="index-list"></ul>
     </div>
   </section>
@@ -862,11 +941,24 @@ footer.grown .orb.orb-3:hover, footer.grown .orb.orb-3:focus-visible { opacity: 
 
 <div class="exam" id="exam" role="dialog" aria-modal="true" aria-labelledby="exam-title" hidden>
   <div class="exam-art" id="exam-art"></div>
+  <div class="lens" id="lens" aria-hidden="true"></div>
   <aside>
     <p class="cat" id="exam-cat"></p>
     <h2 id="exam-title"></h2>
     <dl id="exam-facts"></dl>
+    <div class="views" id="exam-views" role="group" aria-label="How to look at this work">
+      <button type="button" data-view="final" aria-pressed="true">Final</button>
+      <button type="button" data-view="line" aria-pressed="false">Line work</button>
+      <button type="button" data-view="color" aria-pressed="false">Color map</button>
+    </div>
+    <p class="view-note" id="view-note"></p>
     <p class="note" id="exam-note"></p>
+    <div class="signature" id="exam-sig">
+      <span class="sig-k">Audio signature</span>
+      <span class="sig-v" id="sig-v"></span>
+      <button type="button" class="sig-play" id="sig-play" aria-label="Play this work's chord">▶</button>
+    </div>
+    <p class="lens-tip" id="lens-tip"></p>
     <button class="copy share" type="button" id="exam-share">Share link</button>
     <p class="share-url" id="exam-url" hidden></p>
     <div class="exam-nav">
@@ -900,25 +992,29 @@ footer.grown .orb.orb-3:hover, footer.grown .orb.orb-3:focus-visible { opacity: 
             needs a small copy named with "-sm" (e.g. "alien-sm.jpg", about 480px wide)
             for the ring and index. WP + "..." entries load from the WordPress library.
    - year, medium, size, note: optional. Leave as "" to hide that line.
+   - type: "painting", "digital" or "photo". Sets the filter buttons on the ring and the index.
+           Works with no type only show under "All works"; a kind's button appears once a work has it.
+   - line, color: optional files for the close-up view's "Line work" and "Color map" buttons
+           (a real sketch or color study). Without them, those views are traced live from the finished work.
    ===================================================================== */
 const WP = "https://birdswoon.wordpress.com/wp-content/uploads/";
 const WORKS = [
   /* titles in the first group are working titles until Camille names them;
      the pieces from WordPress keep the titles they had on the old site */
-  { title: "Alien with DNA", year: "", medium: "", size: "", note: "", src: "alien.jpg" },
+  { title: "Alien with DNA", year: "", medium: "", size: "", note: "", type: "painting", src: "alien.jpg" },
   { title: "Angel Eyes", year: "", medium: "", size: "", note: "", src: WP + "2025/02/47e2b-angel-eyes.jpg" },
-  { title: "Pink Sun", year: "", medium: "", size: "", note: "", src: "pink-sun.jpg" },
-  { title: "Cosmic Eye", year: "", medium: "", size: "", note: "", src: "cosmic-eye.jpg" },
-  { title: "Flower Face", year: "", medium: "", size: "", note: "", src: "flower-face.jpg" },
+  { title: "Pink Sun", year: "", medium: "", size: "", note: "", type: "painting", src: "pink-sun.jpg" },
+  { title: "Cosmic Eye", year: "", medium: "", size: "", note: "", type: "painting", src: "cosmic-eye.jpg" },
+  { title: "Flower Face", year: "", medium: "", size: "", note: "", type: "painting", src: "flower-face.jpg" },
   { title: "Salt of the Earth", year: "", medium: "", size: "", note: "", src: WP + "2025/02/d4908-salt-of-the-earth.png" },
-  { title: "DNA Woman", year: "", medium: "", size: "", note: "", src: "dna-woman.jpg" },
+  { title: "DNA Woman", year: "", medium: "", size: "", note: "", type: "painting", src: "dna-woman.jpg" },
   { title: "Untitled", year: "", medium: "", size: "", note: "", src: WP + "2025/02/f086e-img_9026.jpg", crop: "1,11,95,74" },
-  { title: "Sunset Tree", year: "", medium: "", size: "", note: "", src: "sunset-tree.jpg" },
+  { title: "Sunset Tree", year: "", medium: "", size: "", note: "", type: "painting", src: "sunset-tree.jpg" },
   { title: "Dream Visitor", year: "2023", medium: "", size: "", note: "", src: WP + "2025/02/decc5-img_0515.jpg" },
-  { title: "Leaf and Sun", year: "", medium: "", size: "", note: "", src: "leaf-sun.jpg" },
+  { title: "Leaf and Sun", year: "", medium: "", size: "", note: "", type: "painting", src: "leaf-sun.jpg" },
   { title: "Skull Woman", year: "", medium: "", size: "", note: "", src: WP + "2023/01/skull_woman.jpeg" },
-  { title: "Rain Woman", year: "", medium: "", size: "", note: "", src: "rain-woman.jpg" },
-  { title: "Cloud Valley", year: "", medium: "", size: "", note: "", src: "cloud-valley.jpg" }
+  { title: "Rain Woman", year: "", medium: "", size: "", note: "", type: "painting", src: "rain-woman.jpg" },
+  { title: "Cloud Valley", year: "", medium: "", size: "", note: "", type: "painting", src: "cloud-valley.jpg" }
 ];
 
 /* THE HIDDEN GALLERIES
@@ -993,6 +1089,8 @@ function sized(src, w, crop) {
   return src + "?w=" + w;
 }
 const pad = n => String(n).padStart(2, "0");
+const TYPE_NAMES = { painting: "Surrealist paintings", digital: "Digital & mixed", photo: "Photography" };
+const TYPE_ONE = { painting: "Surrealist painting", digital: "Digital & mixed", photo: "Photography" };
 const N = WORKS.length;
 const STEP = 360 / N;
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1101,21 +1199,36 @@ function goTo(i) {
   lastInteraction = performance.now();
   if (reduceMotion) rot = target;
 }
-function snap() { target = Math.round(target / STEP) * STEP; }
+function snap() {
+  target = Math.round(target / STEP) * STEP;
+  const f = ((-Math.round(target / STEP)) % N + N) % N;
+  if (!isShown(f)) goTo(nearestShown(f)); /* never come to rest on a filtered-out work */
+}
+/* the filter: which kind of work is showing ("all", "painting", "digital", "photo") */
+let activeType = "all";
+const isShown = i => activeType === "all" || WORKS[i].type === activeType;
+function nearestShown(i, dir) {
+  for (let d = 0; d < N; d++) {
+    const a = ((i + d * (dir || 1)) % N + N) % N;
+    if (isShown(a)) return a;
+    if (!dir) { const b = ((i - d) % N + N) % N; if (isShown(b)) return b; }
+  }
+  return i;
+}
 
 function render() {
   ring.style.transform = "translateZ(" + (-radius) + "px) rotateY(" + rot + "deg)";
   cards.forEach((c, i) => {
     const facing = Math.cos((i * STEP + rot) * Math.PI / 180); /* 1 = front, -1 = back */
-    c.style.opacity = (0.18 + 0.82 * Math.max(0, (facing + 0.35) / 1.35)).toFixed(3);
+    c.style.opacity = ((0.18 + 0.82 * Math.max(0, (facing + 0.35) / 1.35)) * (isShown(i) ? 1 : 0.14)).toFixed(3);
     c.style.filter = "saturate(" + (0.35 + 0.65 * Math.max(0, facing)).toFixed(2) + ")";
   });
   const f = frontIndex();
   if (f !== lastFront) {
-    if (lastFront !== -1) chime(f);
+    if (lastFront !== -1 && isShown(f)) chime(f);
     lastFront = f;
     cards.forEach((c, i) => c.classList.toggle("beckon", !coach.opened && i === f));
-    document.getElementById("readout-cat").textContent = "No. " + pad(f + 1) + " of " + pad(N) + (WORKS[f].year ? " · " + WORKS[f].year : "");
+    document.getElementById("readout-cat").textContent = "No. " + pad(f + 1) + " of " + pad(N) + (WORKS[f].type ? " · " + TYPE_ONE[WORKS[f].type] : "") + (WORKS[f].year ? " · " + WORKS[f].year : "");
     document.getElementById("readout-title").textContent = WORKS[f].title;
     ticks.forEach((t, i) => t.setAttribute("aria-current", i === f ? "true" : "false"));
     cards.forEach((c, i) => { c.tabIndex = i === f ? 0 : -1; });
@@ -1123,6 +1236,14 @@ function render() {
 }
 
 function tick(now) {
+  if (snd && soundOn) { /* the drone's filter opens with the ring's speed, and rings brighter in the close-up view */
+    const want = exam.hidden ? 520 + Math.min(40, Math.abs(vel) + (dragging ? 8 : 0)) * 55 : 1100;
+    if (Math.abs(want - snd.base) > 20) {
+      snd.base = want;
+      snd.filter.frequency.setTargetAtTime(want, snd.ctx.currentTime, 0.12);
+      snd.filter.Q.setTargetAtTime(exam.hidden ? 0.7 : 5, snd.ctx.currentTime, 0.4);
+    }
+  }
   if (!dragging) {
     const idle = now - lastInteraction > 5000;
     if (idle && !reduceMotion && document.getElementById("exam").hidden) {
@@ -1178,7 +1299,7 @@ function tapAt(x, y) {
   let best = -1, bestFacing = 0;
   cards.forEach((c, i) => {
     const r = c.getBoundingClientRect();
-    if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+    if (x < r.left || x > r.right || y < r.top || y > r.bottom || !isShown(i)) return;
     const facing = Math.cos((i * STEP + rot) * Math.PI / 180);
     if (facing > bestFacing) { bestFacing = facing; best = i; }
   });
@@ -1209,15 +1330,15 @@ stage.addEventListener("wheel", e => {
   wheelAcc += (e.shiftKey ? e.deltaY : e.deltaX);
   if (Math.abs(wheelAcc) > 40) {
     markTurned();
-    goTo((frontIndex() + (wheelAcc > 0 ? 1 : -1) + N) % N);
+    goTo(nearestShown((frontIndex() + (wheelAcc > 0 ? 1 : -1) + N) % N, wheelAcc > 0 ? 1 : -1));
     wheelAcc = 0;
   }
 }, { passive: false });
 
 /* keyboard */
 stage.addEventListener("keydown", e => {
-  if (e.key === "ArrowRight") { e.preventDefault(); markTurned(); goTo((frontIndex() + 1) % N); }
-  if (e.key === "ArrowLeft") { e.preventDefault(); markTurned(); goTo((frontIndex() - 1 + N) % N); }
+  if (e.key === "ArrowRight") { e.preventDefault(); markTurned(); goTo(nearestShown((frontIndex() + 1) % N, 1)); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); markTurned(); goTo(nearestShown((frontIndex() - 1 + N) % N, -1)); }
   if (e.key === "Enter" && e.target === stage) { e.preventDefault(); openExam(frontIndex()); }
 });
 
@@ -1361,13 +1482,13 @@ window.addEventListener("popstate", () => {
   goTo(i);
 });
 document.getElementById("exam-close").addEventListener("click", () => closeExam());
-document.getElementById("exam-prev").addEventListener("click", () => showWork((examIndex - 1 + N) % N));
-document.getElementById("exam-next").addEventListener("click", () => showWork((examIndex + 1) % N));
+document.getElementById("exam-prev").addEventListener("click", () => showWork(nearestShown((examIndex - 1 + N) % N, -1)));
+document.getElementById("exam-next").addEventListener("click", () => showWork(nearestShown((examIndex + 1) % N, 1)));
 document.addEventListener("keydown", e => {
   if (exam.hidden) return;
   if (e.key === "Escape") closeExam();
-  if (e.key === "ArrowRight") showWork((examIndex + 1) % N);
-  if (e.key === "ArrowLeft") showWork((examIndex - 1 + N) % N);
+  if (e.key === "ArrowRight") showWork(nearestShown((examIndex + 1) % N, 1));
+  if (e.key === "ArrowLeft") showWork(nearestShown((examIndex - 1 + N) % N, -1));
 });
 
 /* share: phones get the system share sheet; computers copy the link.
@@ -1402,7 +1523,7 @@ examArt.addEventListener("pointerup", e => {
   swipe = null;
   if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
     swiped = true;
-    showWork((examIndex + (dx < 0 ? 1 : -1) + N) % N);
+    showWork(nearestShown((examIndex + (dx < 0 ? 1 : -1) + N) % N, dx < 0 ? 1 : -1));
   }
 });
 examArt.addEventListener("pointercancel", () => { swipe = null; });
@@ -1411,6 +1532,50 @@ exam.addEventListener("click", e => {
   if (performance.now() - openedAt < 500) return; /* the tap that opened it, arriving late as a click */
   if (e.target === exam || e.target.id === "exam-art") closeExam();
 });
+
+/* magnifying lens: hover the painting on a computer, or press and hold on a phone */
+const lens = document.getElementById("lens");
+let lensOn = false, lensHold = 0, lensStart = null;
+document.getElementById("lens-tip").textContent = coarse ? "Press and hold the painting to look closer." : "Move over the painting to look closer.";
+function placeLens(x, y, touch) {
+  const img = examArt.querySelector("img");
+  if (!img || !img.naturalWidth) return false;
+  const r = img.getBoundingClientRect();
+  if (x < r.left || x > r.right || y < r.top || y > r.bottom) return false;
+  const Z = 2.6, L = lens.offsetWidth || 190;
+  const ly = touch ? y - L * 0.85 : y; /* above the finger, so it doesn't hide what it shows */
+  lens.style.backgroundImage = 'url("' + (img.currentSrc || img.src) + '")';
+  lens.style.backgroundSize = (r.width * Z) + "px " + (r.height * Z) + "px";
+  lens.style.backgroundPosition = (L / 2 - (x - r.left) * Z) + "px " + (L / 2 - (y - r.top) * Z) + "px";
+  lens.style.left = (x - L / 2) + "px";
+  lens.style.top = (ly - L / 2) + "px";
+  return true;
+}
+function showLens(on) { lensOn = on; lens.classList.toggle("on", on); examArt.classList.toggle("lensing", on); }
+examArt.addEventListener("pointermove", e => {
+  if (e.pointerType === "mouse") { showLens(placeLens(e.clientX, e.clientY, false)); return; }
+  if (lensOn) { e.preventDefault(); placeLens(e.clientX, e.clientY, true); return; }
+  if (lensStart && Math.hypot(e.clientX - lensStart.x, e.clientY - lensStart.y) > 10) { clearTimeout(lensHold); lensStart = null; }
+});
+examArt.addEventListener("mouseleave", () => showLens(false));
+examArt.addEventListener("pointerdown", e => {
+  if (e.pointerType === "mouse") return;
+  lensStart = { x: e.clientX, y: e.clientY };
+  clearTimeout(lensHold);
+  lensHold = setTimeout(() => {
+    if (lensStart && placeLens(lensStart.x, lensStart.y, true)) { showLens(true); swipe = null; }
+  }, 320);
+});
+function endLens() {
+  clearTimeout(lensHold); lensStart = null;
+  if (lensOn) { showLens(false); swiped = true; } /* lifting the finger shouldn't close the view */
+}
+examArt.addEventListener("pointerup", endLens);
+examArt.addEventListener("pointercancel", endLens);
+examArt.addEventListener("contextmenu", e => { if (coarse) e.preventDefault(); });
+/* every painting change: put the lens away, and play its chord if sound is on */
+const fillExamBase = fillExam;
+fillExam = function (i) { showLens(false); fillExamBase(i); setView("final"); fillSignature(i); chord(i); };
 
 /* ---------------- the hidden galleries ----------------
    Each orb blooms open into a violet room holding one of the HIDDEN galleries.
@@ -2322,7 +2487,7 @@ function makeSound() {
     wob.connect(wobAmt).connect(og.gain); wob.start();
     o.connect(og).connect(filter); o.start();
   });
-  return { ctx, master };
+  return { ctx, master, filter, base: 520 };
 }
 const SCALE = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22]; /* minor pentatonic above A3 */
 function chime(i, big) {
@@ -2343,12 +2508,36 @@ function chime(i, big) {
     o.start(t); o.stop(t + 3.4);
   });
 }
+/* opening a painting plays its own soft chord: a minor triad and octave, rolled upward,
+   rooted on the painting's note in the same scale as the glass notes */
+function chord(i, force) {
+  if (!force && (!soundOn || !snd)) return;
+  if (!snd) snd = makeSound();
+  if (!snd) return;
+  const { ctx } = snd;
+  if (ctx.state === "suspended") ctx.resume();
+  const out = soundOn ? snd.master : ctx.destination;
+  const vol = soundOn ? 1 : 0.16; /* heard on its own, without the drone */
+  const t = ctx.currentTime + 0.02;
+  lastChimeT = t;
+  const root = 220 * Math.pow(2, SCALE[i % SCALE.length] / 12);
+  [[1, 0, "sine"], [1.1892, 0.07, "triangle"], [1.4983, 0.14, "triangle"], [2, 0.21, "sine"]].forEach(([m, dl, type], k) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = root * m;
+    g.gain.setValueAtTime(0, t + dl);
+    g.gain.linearRampToValueAtTime(vol * 0.34 / (1 + k * 0.5), t + dl + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dl + 2.8);
+    o.connect(g).connect(out);
+    o.start(t + dl); o.stop(t + dl + 3);
+  });
+}
 soundBtn.addEventListener("click", async () => {
   if (!snd) snd = makeSound();
   if (!snd) return;
   soundOn = !soundOn;
   const { ctx, master } = snd;
   if (soundOn) await ctx.resume();
+  else if (ctx.state === "running") { /* keep running long enough to fade out */ }
   const t = ctx.currentTime;
   master.gain.cancelScheduledValues(t);
   master.gain.setValueAtTime(master.gain.value, t);
@@ -2386,11 +2575,304 @@ function surprise() {
   chime(4, true);
 }
 
+/* ---------------- scroll line ----------------
+   A thin vein grows down the right edge as the page scrolls, sprouting
+   small side branches as it passes them. Drawn only when the scroll changes. */
+const scv = document.getElementById("scroll-veins"), scx = scv.getContext("2d");
+let scW = 0, scH = 0, scBr = [], scRaf = 0;
+function svSize() {
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  scW = scv.clientWidth; scH = innerHeight;
+  scv.width = scW * d; scv.height = scH * d;
+  scx.setTransform(d, 0, 0, d, 0, 0);
+  const rnd = mulberry32(7);
+  scBr = [];
+  for (let y = 50; y < scH; y += 60 + rnd() * 90) scBr.push({ y, len: 5 + rnd() * (scW - 7), dir: rnd() < 0.5 ? -1 : 1 });
+  svDraw();
+}
+const scX = (cx, y) => cx + Math.sin(y * 0.045) * 2.4;
+function svDraw() {
+  scRaf = 0;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+  const h = scH * p, cx = scW - 5;
+  scx.clearRect(0, 0, scW, scH);
+  if (h < 2) return;
+  const g = scx.createLinearGradient(0, 0, 0, scH);
+  g.addColorStop(0, "rgba(245, 9, 131, 0.9)");
+  g.addColorStop(0.55, "rgba(37, 200, 222, 0.85)");
+  g.addColorStop(1, "rgba(195, 219, 9, 0.9)");
+  scx.strokeStyle = g; scx.lineCap = "round";
+  scx.lineWidth = 1.6;
+  scx.beginPath(); scx.moveTo(scX(cx, 0), 0);
+  for (let y = 4; y <= h; y += 4) scx.lineTo(scX(cx, y), y);
+  scx.stroke();
+  scx.lineWidth = 1;
+  scBr.forEach(b => {
+    if (b.y > h) return;
+    const k = Math.min(1, (h - b.y) / 70), x0 = scX(cx, b.y);
+    scx.globalAlpha = 0.7 * k;
+    scx.beginPath(); scx.moveTo(x0, b.y);
+    scx.quadraticCurveTo(x0 - b.len * 0.55 * k, b.y + 5 * b.dir, x0 - b.len * k, b.y + 13 * b.dir * k);
+    scx.stroke();
+  });
+  scx.globalAlpha = 1;
+  scx.fillStyle = "rgba(236, 230, 220, 0.95)";
+  scx.shadowColor = "rgba(245, 9, 131, 0.9)"; scx.shadowBlur = 8;
+  scx.beginPath(); scx.arc(scX(cx, h), Math.min(h, scH - 3), 2.2, 0, Math.PI * 2); scx.fill();
+  scx.shadowBlur = 0;
+}
+window.addEventListener("scroll", () => { if (!scRaf) scRaf = requestAnimationFrame(svDraw); }, { passive: true });
+svSize();
+
+/* ---------------- filters: the ring and the index together ----------------
+   One button per kind of work that has a type in THE COLLECTION. Filtered-out
+   works fade back on the ring (it never stops on them) and leave the index. */
+const filterBars = [...document.querySelectorAll("[data-filters]")];
+const typesUsed = ["painting", "digital", "photo"].filter(t => WORKS.some(w => w.type === t));
+function applyFilter(t) {
+  activeType = t;
+  filterBars.forEach(bar => [...bar.children].forEach(b => b.setAttribute("aria-pressed", String(b.dataset.type === t))));
+  cards.forEach((c, i) => c.classList.toggle("filtered-out", !isShown(i)));
+  ticks.forEach((tk, i) => tk.classList.toggle("filtered-out", !isShown(i)));
+  let shown = 0;
+  idxItems.forEach(({ li }, i) => {
+    const keep = isShown(i);
+    li.classList.toggle("filtered-out", !keep);
+    li.classList.remove("filter-in");
+    if (!keep) return;
+    if (!reduceMotion) { void li.offsetWidth; li.style.animationDelay = (shown * 0.05) + "s"; li.classList.add("filter-in"); }
+    shown++;
+  });
+  document.getElementById("index-count").textContent = t === "all" ? N + " works" : shown + " of " + N + " works";
+  const f = frontIndex();
+  if (!isShown(f)) goTo(nearestShown(f));
+  lastFront = -1;
+  chime(shown, true);
+}
+if (typesUsed.length) {
+  filterBars.forEach(bar => {
+    [["all", "All works", N]].concat(typesUsed.map(t => [t, TYPE_NAMES[t], WORKS.filter(w => w.type === t).length])).forEach(([key, label, n]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.dataset.type = key;
+      b.setAttribute("aria-pressed", String(key === "all"));
+      const l = document.createElement("span"); l.textContent = label;
+      const c = document.createElement("b"); c.textContent = n;
+      b.append(l, c);
+      bar.appendChild(b);
+    });
+    bar.hidden = false;
+    bar.addEventListener("pointerdown", e => e.stopPropagation()); /* tapping a filter isn't a drag of the ring */
+    bar.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { applyFilter(b.dataset.type); markTurned(); } });
+  });
+}
+/* the ring's filter row sits just under the header, however tall the header wraps */
+const ringBar = document.querySelector(".ring-filters");
+function placeRingFilters() { ringBar.style.top = (document.querySelector(".top").getBoundingClientRect().height + 6) + "px"; }
+placeRingFilters();
+
+/* ---------------- cards: 3D tilt and a light halo under the cursor ----------------
+   Found by position (like taps), since browsers don't hit-test the turned cards reliably. */
+if (!coarse && !reduceMotion) {
+  let tilted = null;
+  const untilt = () => { if (!tilted) return; tilted.classList.remove("tilting"); ["--rx", "--ry", "--tz"].forEach(k => tilted.style.removeProperty(k)); tilted = null; };
+  stage.addEventListener("pointermove", e => {
+    if (dragging || e.pointerType !== "mouse") { untilt(); return; }
+    let best = null, bestFacing = 0.55;
+    cards.forEach((c, i) => {
+      if (!isShown(i)) return;
+      const r = c.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+      const facing = Math.cos((i * STEP + rot) * Math.PI / 180);
+      if (facing > bestFacing) { bestFacing = facing; best = c; }
+    });
+    if (best !== tilted) untilt();
+    if (!best) return;
+    const r = best.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    best.style.setProperty("--ry", ((x - 0.5) * 16).toFixed(2) + "deg");
+    best.style.setProperty("--rx", ((0.5 - y) * 14).toFixed(2) + "deg");
+    best.style.setProperty("--tz", "18px");
+    best.style.setProperty("--hx", (x * 100).toFixed(1) + "%");
+    best.style.setProperty("--hy", (y * 100).toFixed(1) + "%");
+    best.classList.add("tilting");
+    tilted = best;
+  });
+  stage.addEventListener("pointerleave", untilt);
+  stage.addEventListener("pointerdown", untilt);
+}
+
+/* ---------------- close-up view: ways of looking, and the work's chord ----------------
+   "Line work" and "Color map" show a real sketch or color study when one is listed
+   in THE COLLECTION (line:, color:). Otherwise they're traced live from the finished work. */
+const viewBtns = [...document.querySelectorAll("#exam-views button")];
+const viewNote = document.getElementById("view-note");
+function setView(v) {
+  const w = WORKS[examIndex], img = examArt.querySelector("img");
+  viewBtns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+  const file = v !== "final" && w[v];
+  if (img) {
+    const want = file ? file : sized(w.src, 1600, w.crop);
+    if (img.getAttribute("src") !== want) img.src = want;
+  }
+  examArt.dataset.view = file ? "final" : v;
+  lens.style.filter = file || v === "final" ? "" : "url(#f-" + v + ")";
+  lens.style.backgroundColor = !file && v === "line" ? "#f3eee4" : "";
+  viewNote.textContent = v === "final" ? "" :
+    file ? (v === "line" ? "The artist's line work." : "The artist's color study.") :
+    (v === "line" ? "Edges traced live from the finished work." : "The work's color fields, simplified live.");
+}
+viewBtns.forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+const NOTE_NAMES = ["A", "B♭", "B", "C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭"];
+function fillSignature(i) {
+  const semi = SCALE[i % SCALE.length];
+  const root = 220 * Math.pow(2, semi / 12);
+  document.getElementById("sig-v").textContent = NOTE_NAMES[semi % 12] + " minor · " + root.toFixed(1) + " Hz";
+}
+const sigPlay = document.getElementById("sig-play");
+sigPlay.addEventListener("click", () => {
+  chord(examIndex, true);
+  sigPlay.classList.add("on");
+  setTimeout(() => sigPlay.classList.remove("on"), 1600);
+});
+
+/* ---------------- About: neural branches rising from the footer ----------------
+   Cyan and magenta branches keep emerging along the bottom edge of the About
+   section (where the footer's own network begins) and grow up into the biography,
+   faint enough to read through, slowly fading so the growth never stops. */
+const aboutSec = document.getElementById("about");
+const an = document.createElement("canvas");
+an.id = "about-neural";
+an.setAttribute("aria-hidden", "true");
+aboutSec.insertBefore(an, aboutSec.firstChild);
+const anx = an.getContext("2d");
+const AN_C = [[37, 200, 222], [245, 9, 131]];
+let anW = 0, anH = 0, anTips = [], anRaf = 0, anOn = false, anLast = 0, anSpawn = 0;
+function anSize() {
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  anW = aboutSec.clientWidth; anH = aboutSec.clientHeight;
+  an.width = anW * d; an.height = anH * d;
+  anx.setTransform(d, 0, 0, d, 0, 0);
+  anx.lineCap = "round";
+  anTips = [];
+  if (reduceMotion) { for (let k = 0; k < (anW < 600 ? 6 : 11); k++) anRoot(); for (let s = 0; s < 900; s++) anStep(); }
+}
+function anRoot() {
+  const c = Math.random() < 0.5 ? 0 : 1;
+  anTips.push({ x: Math.random() * anW, y: anH + 2, a: -Math.PI / 2 + (Math.random() - 0.5) * 0.7, w: anW < 600 ? 1.1 : 1.5, life: anH * (0.35 + Math.random() * 0.5), c, gen: 0 });
+}
+function anStep() {
+  const next = [];
+  for (const t of anTips) {
+    const sp = 1.7;
+    t.a += (Math.random() - 0.5) * 0.32 + (-Math.PI / 2 - t.a) * 0.035; /* wander, but keep rising */
+    const nx = t.x + Math.cos(t.a) * sp, ny = t.y + Math.sin(t.a) * sp;
+    const fade = Math.min(1, t.life / 120) * Math.min(1, ny / (anH * 0.25)); /* thin out near the top */
+    anx.strokeStyle = "rgba(" + AN_C[t.c].join(",") + "," + (0.32 * fade).toFixed(3) + ")";
+    anx.lineWidth = Math.max(0.35, t.w);
+    anx.beginPath(); anx.moveTo(t.x, t.y); anx.lineTo(nx, ny); anx.stroke();
+    t.x = nx; t.y = ny; t.life -= sp; t.w *= 0.9975;
+    if (t.life > 0 && ny > 0) {
+      next.push(t);
+      if (t.gen < 4 && Math.random() < 0.018) {
+        next.push({ x: nx, y: ny, a: t.a + (Math.random() < 0.5 ? -1 : 1) * (0.45 + Math.random() * 0.5), w: t.w * 0.7, life: t.life * (0.4 + Math.random() * 0.4), c: Math.random() < 0.8 ? t.c : 1 - t.c, gen: t.gen + 1 });
+        if (Math.random() < 0.35) { /* a small cell body at the fork */
+          anx.fillStyle = "rgba(" + AN_C[t.c].join(",") + "," + (0.4 * fade).toFixed(3) + ")";
+          anx.beginPath(); anx.arc(nx, ny, 1.4 + Math.random() * 1.6, 0, Math.PI * 2); anx.fill();
+        }
+      }
+    }
+  }
+  anTips = next;
+}
+function anLoop(now) {
+  anRaf = 0;
+  if (!anOn) return;
+  if (now - anLast > 33) { /* about 30 frames a second is plenty for slow growth */
+    anLast = now;
+    anx.save(); anx.globalCompositeOperation = "destination-out"; anx.fillStyle = "rgba(0,0,0,0.012)"; anx.fillRect(0, 0, anW, anH); anx.restore();
+    if (now > anSpawn && anTips.length < (anW < 600 ? 10 : 22)) { anRoot(); anSpawn = now + 500 + Math.random() * 900; }
+    anStep(); anStep();
+  }
+  anRaf = requestAnimationFrame(anLoop);
+}
+anSize();
+if (!reduceMotion) {
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(es => es.forEach(en => { anOn = en.isIntersecting; if (anOn && !anRaf) anRaf = requestAnimationFrame(anLoop); }), { rootMargin: "100px" }).observe(aboutSec);
+  } else { anOn = true; anRaf = requestAnimationFrame(anLoop); }
+}
+
+/* ---------------- the small neuron on the home ring ----------------
+   A single nerve cell beside the ring: its body breathes and signals run out
+   along its dendrites, more often while the ring is turning. */
+const hn = document.createElement("canvas");
+hn.className = "hero-neuron";
+hn.setAttribute("aria-hidden", "true");
+stage.insertBefore(hn, stage.firstChild);
+const hnx = hn.getContext("2d");
+let hnS = 0, hnDend = [], hnSig = [], hnOn = true, hnRaf = 0, hnLast = 0;
+function hnBuild() {
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  hnS = hn.clientWidth || 160;
+  hn.width = hn.height = hnS * d;
+  hnx.setTransform(d, 0, 0, d, 0, 0);
+  const rnd = mulberry32(11), c = hnS / 2;
+  hnDend = [];
+  const grow = (x, y, a, len, depth, col) => {
+    const ex = x + Math.cos(a) * len, ey = y + Math.sin(a) * len;
+    const bend = (rnd() - 0.5) * len * 0.5;
+    const qx = (x + ex) / 2 + Math.cos(a + Math.PI / 2) * bend, qy = (y + ey) / 2 + Math.sin(a + Math.PI / 2) * bend;
+    const seg = { x, y, qx, qy, ex, ey, w: Math.max(0.5, 2.2 - depth * 0.6), col, depth };
+    hnDend.push(seg);
+    if (depth < 3) { const n = 1 + (rnd() < 0.6 ? 1 : 0); for (let k = 0; k < n; k++) grow(ex, ey, a + (rnd() - 0.5) * 1.2, len * (0.55 + rnd() * 0.2), depth + 1, col); }
+  };
+  const arms = 7;
+  for (let k = 0; k < arms; k++) grow(c, c, (k / arms) * Math.PI * 2 + rnd() * 0.5, hnS * (0.16 + rnd() * 0.07), 0, k % 3 === 0 ? 1 : 0);
+}
+const qp = (s, f) => { const u = 1 - f; return [u * u * s.x + 2 * u * f * s.qx + f * f * s.ex, u * u * s.y + 2 * u * f * s.qy + f * f * s.ey]; };
+function hnDraw(now) {
+  const t = now / 1000, c = hnS / 2;
+  hnx.clearRect(0, 0, hnS, hnS);
+  for (const s of hnDend) {
+    hnx.strokeStyle = "rgba(" + AN_C[s.col].join(",") + "," + (0.5 - s.depth * 0.09) + ")";
+    hnx.lineWidth = s.w;
+    hnx.beginPath(); hnx.moveTo(s.x, s.y); hnx.quadraticCurveTo(s.qx, s.qy, s.ex, s.ey); hnx.stroke();
+  }
+  const pulse = 0.5 + 0.5 * Math.sin(t * 1.6);
+  const g = hnx.createRadialGradient(c, c, 0, c, c, hnS * 0.14);
+  g.addColorStop(0, "rgba(236,230,220,0.95)"); g.addColorStop(0.35, "rgba(37,200,222," + (0.55 + pulse * 0.3) + ")"); g.addColorStop(1, "rgba(37,200,222,0)");
+  hnx.fillStyle = g; hnx.beginPath(); hnx.arc(c, c, hnS * 0.14, 0, Math.PI * 2); hnx.fill();
+  hnx.fillStyle = "rgba(236,230,220,0.9)"; hnx.beginPath(); hnx.arc(c, c, hnS * (0.035 + pulse * 0.008), 0, Math.PI * 2); hnx.fill();
+  const busy = dragging || Math.abs(vel) > 0.5;
+  if (Math.random() < (busy ? 0.25 : 0.04)) { const roots = hnDend.filter(s => s.depth === 0); hnSig.push({ s: roots[(Math.random() * roots.length) | 0], f: 0 }); }
+  hnSig = hnSig.filter(p => {
+    p.f += 0.035;
+    if (p.f >= 1) { const kids = hnDend.filter(s => s.x === p.s.ex && s.y === p.s.ey); if (!kids.length) return false; p.s = kids[(Math.random() * kids.length) | 0]; p.f = 0; }
+    const [x, y] = qp(p.s, p.f);
+    hnx.fillStyle = "rgba(" + AN_C[p.s.col].join(",") + ",0.95)";
+    hnx.beginPath(); hnx.arc(x, y, 1.6, 0, Math.PI * 2); hnx.fill();
+    return true;
+  });
+}
+function hnLoop(now) {
+  hnRaf = 0;
+  if (!hnOn) return;
+  if (now - hnLast > 33) { hnLast = now; hnDraw(now); }
+  hnRaf = requestAnimationFrame(hnLoop);
+}
+hnBuild();
+if (reduceMotion) hnDraw(0);
+else if ("IntersectionObserver" in window) {
+  new IntersectionObserver(es => es.forEach(en => { hnOn = en.isIntersecting; if (hnOn && !hnRaf) hnRaf = requestAnimationFrame(hnLoop); })).observe(stage);
+} else hnRaf = requestAnimationFrame(hnLoop);
+
 /* ---------------- start ---------------- */
 let resizeTimer;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { layout(); resizeField(); buildLungs(); if (reduceMotion) for (let i = 0; i < 900; i++) growStep(); }, 150);
+  resizeTimer = setTimeout(() => { layout(); resizeField(); buildLungs(); svSize(); anSize(); hnBuild(); placeRingFilters(); if (reduceMotion) for (let i = 0; i < 900; i++) growStep(); }, 150);
 });
 buildLungs();
 layout();
