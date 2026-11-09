@@ -1,0 +1,2467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>camicamirobot</title>
+<meta name="description" content="Psychedelic surrealism by camicamirobot. Ancient and futuristic at the same time. Technological, but organic.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="180x180" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="canonical" href="https://camicamirobot.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="camicamirobot">
+<meta property="og:description" content="Psychedelic surrealism by camicamirobot. Ancient and futuristic at the same time. Technological, but organic.">
+<meta property="og:image" content="https://camicamirobot.com/alien.jpg">
+<meta property="og:url" content="https://camicamirobot.com/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a full-screen "orrery" where the works turn on a 3D ring over a growing filament field,
+   followed by a plain index grid and a short about/contact band. Dark by design. */
+:root {
+  --void: #17151b;        /* Void Black, contrast */
+  --void-2: #221f28;      /* card and panel surface */
+  --bone: #ece6dc;        /* primary text */
+  --dim: #9a94a6;         /* secondary text */
+  --magenta: #f50983;     /* Electric Magenta, accent */
+  --gold: #c3db09;        /* Alien Chartreuse, primary (labels and numbers) */
+  --cyan: #25c8de;        /* Cosmic Cyan, secondary */
+  --line: rgba(236, 230, 220, 0.14);
+
+  --f-mark: "Major Mono Display", "IBM Plex Mono", ui-monospace, monospace;
+  --f-title: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --f-label: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--f-title);
+  font-size: 18px;
+  line-height: 1.55;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--magenta); outline-offset: 3px; }
+
+/* ---------- filament field ---------- */
+#swarm { z-index: 30 !important; } /* above the content, below the full-size view */
+#field, #motes, #swarm {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ---------- header ---------- */
+.top {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 20;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: calc(18px + env(safe-area-inset-top, 0px));
+  padding-bottom: 18px;
+  padding-left: var(--gutter-l);
+  padding-right: var(--gutter-r);
+  background: linear-gradient(var(--void) 30%, rgba(23, 21, 27, 0));
+}
+.mark {
+  font-family: var(--f-mark);
+  font-size: clamp(20px, 3.2vw, 30px);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  line-height: 1;
+}
+/* the name is always two-tone: camicami in magenta, robot in cyan */
+.wm-p { color: var(--magenta); }
+.wm-t { color: var(--cyan); }
+.nav {
+  display: flex;
+  gap: 22px;
+  font-family: var(--f-label);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.nav a { text-decoration: none; color: var(--dim); transition: color .2s; }
+.nav a:hover { color: var(--bone); }
+
+/* ---------- orrery ---------- */
+.stage {
+  position: relative;
+  z-index: 1;
+  min-height: max(620px, 100svh);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  overflow: hidden;
+  perspective: 1500px;
+  perspective-origin: 50% 40%;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  padding-top: 90px;
+}
+.stage.dragging { cursor: grabbing; }
+.ring-wrap {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+}
+.ring {
+  --card-w: clamp(150px, 36vw, 240px);
+  position: relative;
+  width: var(--card-w);
+  height: calc(var(--card-w) * 1.32);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.card {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 8px 8px 0;
+  border: 1px solid var(--line);
+  background: var(--void-2);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  cursor: pointer;
+  transition: border-color .3s;
+}
+.card:hover, .card:focus-visible { border-color: var(--magenta); }
+.card .art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--void-2);
+  pointer-events: none;
+}
+.card .tag {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 2px 8px;
+  font-family: var(--f-label);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.card .tag b { font-weight: 500; color: var(--gold); }
+.missing {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 12px;
+  font-family: var(--f-title);
+  font-style: italic;
+  color: var(--dim);
+  background: var(--void-2);
+  height: 100%;
+}
+
+/* readout under the ring */
+.readout {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding-bottom: 34px;
+  padding-left: var(--gutter-l);
+  padding-right: var(--gutter-r);
+  text-align: center;
+  pointer-events: none;
+}
+.readout .cat {
+  font-family: var(--f-label);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.readout h1 {
+  margin: 0;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 1.05;
+  text-wrap: balance;
+  max-width: 18ch;
+  min-height: 1.05em;
+}
+.ticks {
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+.tick {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.tick::before {
+  content: "";
+  width: 2px;
+  height: 10px;
+  background: var(--dim);
+  transition: height .25s, background .25s;
+}
+.tick[aria-current="true"]::before { height: 18px; background: var(--magenta); }
+.hint {
+  font-family: var(--f-label);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+
+
+/* A miniature neural arbor on the main stage, echoing the footer's living anatomy. */
+.hero-neuron {
+  position: absolute;
+  z-index: 1;
+  left: clamp(15px, 4.5vw, 82px);
+  top: 23%;
+  width: clamp(128px, 17vw, 210px);
+  aspect-ratio: 1;
+  opacity: .76;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px rgba(37, 200, 222, .11));
+}
+.hero-neuron canvas { display: block; width: 100%; height: 100%; }
+@media (max-width: 700px) {
+  .hero-neuron { left: 8px; top: 18%; width: clamp(88px, 25vw, 120px); opacity: .55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-neuron { filter: none; }
+}
+
+/* ---------- index grid ---------- */
+.band {
+  position: relative;
+  z-index: 1;
+  padding-block: 88px;
+  padding-left: var(--gutter-l);
+  padding-right: var(--gutter-r);
+  background: rgba(23, 21, 27, 0.84);
+  border-top: 1px solid var(--line);
+}
+.band-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
+.eyebrow {
+  margin: 0 0 8px;
+  font-family: var(--f-label);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.band h2 {
+  margin: 0 0 40px;
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+/* the index: a loose field of works floating in a slow nebula */
+#index {
+  padding-block: clamp(110px, 13vw, 180px);
+  overflow: hidden;
+  background: rgba(19, 17, 23, 0.9);
+}
+#index .band-inner { max-width: 1240px; }
+#index h2 { margin-bottom: clamp(56px, 8vw, 110px); }
+.nebula {
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  filter: blur(70px);
+  opacity: 0.595; /* 15% softer */
+}
+.nebula i {
+  position: absolute;
+  border-radius: 50%;
+  animation: nebula-drift 40s ease-in-out infinite alternate;
+}
+.nebula i:nth-child(1) { width: 48%; height: 46%; left: 8%; top: 18%; background: radial-gradient(closest-side, rgba(245, 9, 131, 0.30), rgba(245, 9, 131, 0)); }
+.nebula i:nth-child(2) { width: 52%; height: 50%; right: 4%; top: 36%; background: radial-gradient(closest-side, rgba(37, 200, 222, 0.24), rgba(37, 200, 222, 0)); animation-duration: 52s; animation-delay: -18s; }
+.nebula i:nth-child(3) { width: 30%; height: 30%; left: 38%; bottom: 8%; background: radial-gradient(closest-side, rgba(195, 219, 9, 0.14), rgba(195, 219, 9, 0)); animation-duration: 34s; animation-delay: -7s; }
+.nebula i:nth-child(4) { width: 26%; height: 28%; left: 60%; top: 6%; background: radial-gradient(closest-side, rgba(245, 9, 131, 0.16), rgba(245, 9, 131, 0)); animation-duration: 46s; animation-delay: -30s; }
+/* violet (#B84DFF) glow clouds */
+.nebula i:nth-child(5) { width: 44%; height: 40%; left: -4%; top: 52%; background: radial-gradient(closest-side, rgba(184, 77, 255, 0.46), rgba(184, 77, 255, 0)); animation-duration: 44s; animation-delay: -12s; }
+.nebula i:nth-child(6) { width: 34%; height: 34%; left: 52%; top: 64%; background: radial-gradient(closest-side, rgba(184, 77, 255, 0.38), rgba(184, 77, 255, 0)); animation-duration: 38s; animation-delay: -24s; }
+/* small violet lights scattered through the index, each breathing at its own pace */
+.lights { position: absolute; inset: 0; pointer-events: none; opacity: 0.85; }
+.lights i {
+  position: absolute;
+  left: var(--x); top: var(--y);
+  width: var(--s, 6px); height: var(--s, 6px);
+  border-radius: 50%;
+  background: #e2c2ff;
+  box-shadow: 0 0 12px 4px rgba(184, 77, 255, 0.95), 0 0 40px 14px rgba(184, 77, 255, 0.5), 0 0 100px 34px rgba(184, 77, 255, 0.22);
+  animation: glowlight var(--d, 7s) ease-in-out infinite;
+  animation-delay: var(--dl, 0s);
+}
+@keyframes glowlight {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes nebula-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(7%, -6%) scale(1.18); }
+}
+.glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(37, 200, 222, 0.14), rgba(245, 9, 131, 0.07) 55%, rgba(245, 9, 131, 0));
+  opacity: 0;
+  transition: opacity .8s ease;
+}
+.glow.on { opacity: 0.85; }
+
+.index {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(64px, 8vw, 120px) clamp(36px, 6vw, 96px);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 80px;
+}
+.index li {
+  width: var(--w, 100%);
+  justify-self: var(--js, start);
+  margin-top: var(--dy, 0px);
+  translate: var(--px, 0px) var(--py, 0px);
+  transition: translate 1.1s cubic-bezier(.2, .7, .2, 1), opacity .6s ease;
+}
+.index:has(button:hover) li:not(:hover) { opacity: 0.38; }
+.index button {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  animation: drift 10s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.index .thumb {
+  aspect-ratio: var(--ar, 4 / 5);
+  max-width: 100%;
+  overflow: hidden;
+  background: var(--void-2);
+  box-shadow: 0 0 0 1px var(--line), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  filter: saturate(0.8) brightness(0.88);
+  transition: box-shadow .6s ease, filter .6s ease;
+}
+.index .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s cubic-bezier(.2, .7, .2, 1);
+}
+.index button:hover .thumb,
+.index button:focus-visible .thumb {
+  filter: none;
+  box-shadow: 0 0 0 1px var(--glow-c), 0 0 56px -8px var(--glow-c), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+  /* glow at 75% strength */
+  box-shadow: 0 0 0 1px var(--glow-c), 0 0 56px -8px color-mix(in srgb, var(--glow-c) 75%, transparent), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+.index button:hover .thumb img { transform: scale(1.05); }
+.index .meta { display: grid; gap: 3px; min-width: 0; padding-left: 2px; }
+.index .meta span:first-child {
+  font-family: var(--f-label);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.index .meta span:last-child {
+  font-style: italic;
+  font-size: 21px;
+  line-height: 1.2;
+  transition: color .5s ease;
+}
+.index button:hover .meta span:last-child { color: var(--glow-c); }
+
+@media (max-width: 900px) {
+  .index { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .index { grid-template-columns: minmax(0, 1fr); gap: 72px; }
+  .index li { width: 82%; margin-top: 0; }
+  .index li:nth-child(even) { justify-self: end; }
+  .index li:nth-child(odd) { justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nebula i, .index button, .lights i { animation: none; }
+  .lights i { opacity: 0.7; }
+  .index li { transition: opacity .3s; }
+}
+
+/* ---------- about: upward continuation of the footer's living nerves ---------- */
+#about { overflow: hidden; }
+#about-neural {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .62;
+}
+#about .band-inner { position: relative; z-index: 1; }
+@media (max-width: 760px) { #about-neural { opacity: .38; } }
+
+/* ---------- about ---------- */
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+.statement { margin: 0; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.35; max-width: 30ch; }
+/* artist bio: a large lead paragraph, then readable body text */
+.bio h2 .sep { color: var(--dim); font-style: normal; }
+.bio h2 .wm { font-family: var(--f-mark); font-style: normal; font-size: 0.72em; letter-spacing: 0.01em; }
+.bio .statement { max-width: 34ch; margin-bottom: 30px; }
+.bio p:not(.eyebrow):not(.statement) { margin: 0 0 18px; font-size: 19px; line-height: 1.65; max-width: 62ch; color: rgba(236, 230, 220, 0.92); }
+.wm-c { color: var(--gold); } /* the name inside running text: one color, easy to read */
+.bio .coda { margin-top: 30px !important; font-style: italic; font-size: clamp(21px, 2.2vw, 26px) !important; line-height: 1.35 !important; color: var(--bone) !important; }
+.bio .eyebrow { line-height: 1.6; }
+.contact { position: sticky; top: 110px; }
+@media (max-width: 760px) { .contact { position: static; } }
+@media (max-width: 560px) { .bio h2 .sep { display: none; } .bio h2 .wm { display: block; margin-top: 6px; } }
+.contact { display: grid; gap: 18px; font-family: var(--f-label); font-size: 13px; }
+.contact div { display: grid; gap: 4px; }
+.contact dd { margin: 0; }
+.contact dt, .contact .k { color: var(--dim); letter-spacing: 0.14em; text-transform: uppercase; font-size: 10px; }
+.contact a { text-decoration-color: var(--cyan); text-underline-offset: 4px; }
+.contact a:hover { color: var(--cyan); }
+.copy {
+  justify-self: start;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  background: none;
+  padding: 6px 10px;
+  font-family: var(--f-label);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.copy:hover { border-color: var(--magenta); }
+/* footer: a bronchial vein tree rising from the bottom edge, breathing slowly */
+footer {
+  position: relative;
+  z-index: 1;
+  height: clamp(260px, 34vw, 420px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  padding-block: 0 calc(22px + env(safe-area-inset-bottom, 0px));
+  padding-left: var(--gutter-l);
+  padding-right: var(--gutter-r);
+  font-family: var(--f-label);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  background: var(--void);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+footer p {
+  position: relative;
+  margin: 0;
+  padding: 6px 12px;
+  background: rgba(23, 21, 27, 0.78);
+}
+#lungs, #sparks {
+  opacity: 0.74;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 0%;
+}
+#lungs.breathing, #sparks.breathing { animation: breathe 6.5s ease-in-out infinite; }
+footer.alive { cursor: crosshair; }
+.footer-hint {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+  font-family: var(--f-label);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.footer-hint.on { opacity: 0.85; }
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1); opacity: 0.68; }
+  45% { transform: scale(1.025, 1.045); opacity: 0.8; } /* the whole layer never goes past 80% */
+}
+
+/* ---------- examination view ---------- */
+.exam {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  background: rgba(17, 15, 21, 0.96);
+  animation: exam-in .35s ease;
+}
+@keyframes exam-in { from { opacity: 0; } to { opacity: 1; } }
+.exam-art {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: calc(28px + env(safe-area-inset-top, 0px)) 28px calc(28px + env(safe-area-inset-bottom, 0px)) max(28px, env(safe-area-inset-left, 0px));
+}
+.exam-art img {
+  max-width: 100%;
+  max-height: calc(100svh - 56px);
+  object-fit: contain;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.exam aside {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  padding: calc(72px + env(safe-area-inset-top, 0px)) max(28px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) 28px;
+}
+.exam .cat { margin: 0; font-family: var(--f-label); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); font-variant-numeric: tabular-nums; }
+.exam h2 { margin: 0; font-weight: 400; font-style: italic; font-size: clamp(30px, 3.4vw, 42px); line-height: 1.08; text-wrap: balance; }
+.exam dl { margin: 0; display: grid; gap: 10px; font-family: var(--f-label); font-size: 13px; }
+.exam dl div { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; }
+.exam dt { color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; padding-top: 2px; }
+.exam dd { margin: 0; }
+.exam .note { margin: 0; color: var(--bone); max-width: 34ch; }
+.exam-nav { display: flex; gap: 10px; margin-top: auto; padding-top: 12px; }
+.exam-nav button, .close {
+  border: 1px solid var(--line);
+  background: none;
+  padding: 10px 14px;
+  font-family: var(--f-label);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.exam-nav button:hover, .close:hover { border-color: var(--magenta); }
+.close {
+  position: absolute;
+  top: calc(18px + env(safe-area-inset-top, 0px));
+  right: max(18px, env(safe-area-inset-right, 0px));
+}
+
+@media (max-width: 760px) {
+  .about-grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+  .exam { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; overflow-y: auto; }
+  .exam-art { padding: calc(64px + env(safe-area-inset-top, 0px)) 16px 12px; }
+  .exam-art img { max-height: 62svh; }
+  .exam aside { border-left: 0; border-top: 1px solid var(--line); padding: 20px var(--gutter-r) calc(24px + env(safe-area-inset-bottom, 0px)) var(--gutter-l); overflow: visible; }
+  .nav { gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .exam { animation: none; }
+  #lungs.breathing, #sparks.breathing { animation: none; }
+  .index .thumb img { transition: none; }
+}
+
+/* ---------- sound toggle ---------- */
+.sound {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; letter-spacing: inherit; text-transform: inherit;
+  color: var(--dim); transition: color .2s;
+}
+.sound:hover, .sound[aria-pressed="true"] { color: var(--bone); }
+.bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
+.bars i { width: 2px; height: 3px; background: currentColor; }
+.sound[aria-pressed="true"] .bars i { background: var(--gold); animation: eq 1.1s ease-in-out infinite; }
+.sound[aria-pressed="true"] .bars i:nth-child(2) { animation-delay: -.4s; }
+.sound[aria-pressed="true"] .bars i:nth-child(3) { animation-delay: -.75s; }
+@keyframes eq { 0%, 100% { height: 3px; } 50% { height: 10px; } }
+
+/* ---------- first visit: show what the ring does ---------- */
+.hint { display: grid; justify-items: center; gap: 10px; }
+.coach {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 9px 16px;
+  border: 1px solid rgba(195, 219, 9, 0.5);
+  border-radius: 999px;
+  background: rgba(23, 21, 27, 0.72);
+  font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--bone);
+  transition: opacity .7s ease;
+}
+.coach .chev { color: var(--gold); font-size: 16px; line-height: 1; animation: chev-l 1.5s ease-in-out infinite; }
+.coach .chev.r { animation-name: chev-r; }
+@keyframes chev-l { 0%, 100% { transform: translateX(0); opacity: .45; } 50% { transform: translateX(-6px); opacity: 1; } }
+@keyframes chev-r { 0%, 100% { transform: translateX(0); opacity: .45; } 50% { transform: translateX(6px); opacity: 1; } }
+.coach.done { opacity: 0; }
+.hint-open { transition: color .6s ease; }
+.hint-open.fresh { color: var(--bone); }
+.card.beckon::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--magenta);
+  pointer-events: none;
+  animation: beckon 2.2s ease-in-out infinite;
+}
+@keyframes beckon {
+  0%, 100% { opacity: .3; box-shadow: 0 0 0 0 rgba(245, 9, 131, 0); }
+  50% { opacity: 1; box-shadow: 0 0 30px 2px rgba(245, 9, 131, 0.45); }
+}
+.ticks { flex-wrap: wrap; justify-content: center; }
+@media (max-width: 420px) { .ticks { gap: 2px; } }
+
+/* ---------- the hidden reward ---------- */
+.flare {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 42%, rgba(245, 9, 131, 0.32), rgba(37, 200, 222, 0.16) 28%, rgba(195, 219, 9, 0.06) 45%, rgba(23, 21, 27, 0) 62%);
+}
+.stage.woke .flare { animation: flare 1.9s ease-out; }
+@keyframes flare {
+  0% { opacity: 0; transform: scale(.6); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+.whisper {
+  position: absolute;
+  left: 0; right: 0; top: -44px;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity .9s ease;
+}
+.whisper.on { opacity: 1; }
+
+/* ---------- close-up view: share and swipe ---------- */
+.exam-art { touch-action: pan-y; }
+.share { align-self: flex-start; margin-top: 0; }
+.share-url { margin: -8px 0 0; font-family: var(--f-label); font-size: 12px; color: var(--dim); word-break: break-all; user-select: all; }
+
+@media (prefers-reduced-motion: reduce) {
+  .coach .chev, .card.beckon::after, .sound .bars i { animation: none !important; }
+  .card.beckon::after { opacity: 1; }
+}
+
+/* ---------- the orb and its hidden gallery ---------- */
+.orb {
+  position: absolute;
+  z-index: 2;
+  left: 86%;
+  top: clamp(64px, 8vw, 104px);
+  width: 36px; height: 36px;
+  margin: -18px 0 0 -18px;
+  padding: 0; border: 0; border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+}
+.orb span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #e2c2ff;
+  box-shadow: 0 0 12px 4px rgba(184, 77, 255, 0.95), 0 0 40px 14px rgba(184, 77, 255, 0.5), 0 0 100px 34px rgba(184, 77, 255, 0.22);
+  animation: glowlight 7.5s ease-in-out infinite;
+  animation-delay: -2.5s;
+}
+.orb { opacity: 0.85; }
+.orb:hover, .orb:focus-visible { transform: scale(2.1); opacity: 1; }
+@media (max-width: 560px) { .orb { left: auto; right: 8px; top: 122px; margin: 0; } }
+.orb:hover span, .orb:focus-visible span { animation-play-state: paused; opacity: 1; background: #fff; }
+.orb:focus-visible { outline: 1px solid rgba(184, 77, 255, 0.8); outline-offset: 2px; }
+.vault {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  justify-items: center;
+  gap: 14px;
+  padding-top: calc(22px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: radial-gradient(circle at 50% 42%, rgba(184, 77, 255, 0.24), rgba(17, 15, 21, 0.97) 62%), #110f15;
+}
+.vault.opening { animation: vault-in .95s cubic-bezier(.2, .7, .2, 1); }
+@keyframes vault-in {
+  from { clip-path: circle(0px at var(--ox, 50%) var(--oy, 50%)); }
+  to { clip-path: circle(150vmax at var(--ox, 50%) var(--oy, 50%)); }
+}
+.vault-eyebrow {
+  margin: 0;
+  justify-self: start;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--f-label); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #d9b3ff;
+  min-height: 40px; /* level with the Close button, so the painting starts below it */
+}
+.vault-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: #e2c2ff; box-shadow: 0 0 10px 3px rgba(184, 77, 255, 0.9); }
+.vault-art { position: relative; width: 100%; min-height: 0; touch-action: pan-y; }
+.vault-art img, .vault-art .missing { position: absolute; inset: 0; margin: auto; }
+.vault-art .missing { width: min(100%, 320px); height: 100%; }
+.vault-art img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 0 0 1px rgba(184, 77, 255, 0.35), 0 0 80px -10px rgba(184, 77, 255, 0.55), 0 30px 80px rgba(0, 0, 0, 0.6); }
+.vault-cap { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.vault-cap .cat { margin: 0; font-family: var(--f-label); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); font-variant-numeric: tabular-nums; }
+.vault-cap h2 { margin: 0; font-weight: 400; font-style: italic; font-size: clamp(26px, 3vw, 38px); line-height: 1.1; text-wrap: balance; }
+.vault-strip { display: flex; gap: 8px; max-width: 100%; overflow-x: auto; padding: 2px; }
+.vault-strip button { flex: none; width: 52px; height: 52px; padding: 0; border: 1px solid var(--line); background: var(--void-2); cursor: pointer; opacity: 0.55; transition: opacity .3s, border-color .3s; }
+.vault-strip button img, .vault-strip .missing { width: 100%; height: 100%; object-fit: cover; font-size: 9px; padding: 2px; }
+.vault-strip button:hover { opacity: 0.9; }
+.vault-strip button[aria-current="true"] { opacity: 1; border-color: var(--violet, #b84dff); box-shadow: 0 0 14px -2px rgba(184, 77, 255, 0.8); }
+.vault-nav { margin-top: 0; padding-top: 0; }
+@media (max-width: 760px) { .vault-nav { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .vault.opening { animation: none; }
+  .orb span { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<canvas id="motes" aria-hidden="true"></canvas>
+<canvas id="swarm" aria-hidden="true"></canvas>
+
+<header class="top">
+  <a class="mark" href="#top" aria-label="camicamirobot, back to the collection"><span class="wm-p">camicami</span><span class="wm-t">robot</span></a>
+  <nav class="nav" aria-label="Sections">
+    <a href="#top">Collection</a>
+    <a href="#index">Index</a>
+    <a href="#about">About</a>
+    <button class="sound" id="sound" type="button" aria-pressed="false" title="Ambient sound"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="sound-label">Sound off</span></button>
+  </nav>
+</header>
+
+<main>
+  <section class="stage" id="top" aria-label="The collection, arranged on a turning ring" tabindex="0">
+    <div class="hero-neuron" aria-hidden="true"><canvas id="hero-neuron"></canvas></div>
+    <div class="flare" aria-hidden="true"></div>
+    <div class="ring-wrap">
+      <div class="ring" id="ring"></div>
+    </div>
+    <div class="readout" aria-live="polite">
+      <div class="cat" id="readout-cat"></div>
+      <h1 id="readout-title"></h1>
+      <div class="ticks" id="ticks" role="group" aria-label="Jump to a work"></div>
+      <div class="whisper" id="whisper"></div>
+      <div class="hint" id="hint">
+        <span class="coach" id="coach"><span class="chev" aria-hidden="true">‹</span><span id="coach-text">drag to turn</span><span class="chev r" aria-hidden="true">›</span></span>
+        <span class="hint-open" id="hint-open">click the glowing painting to open it</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="index" aria-labelledby="index-title">
+    <div class="nebula" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="lights" aria-hidden="true">
+      <i style="--x:7%;--y:12%;--s:5px;--d:8s;--dl:-1s"></i>
+      <i style="--x:31%;--y:27%;--s:4px;--d:6.5s;--dl:-3s"></i>
+      <i style="--x:88%;--y:9%;--s:7px;--d:9s;--dl:-5s"></i>
+      <i style="--x:63%;--y:33%;--s:4px;--d:7s;--dl:-2s"></i>
+      <i style="--x:14%;--y:56%;--s:6px;--d:10s;--dl:-6s"></i>
+      <i style="--x:47%;--y:61%;--s:5px;--d:7.5s;--dl:-4s"></i>
+      <i style="--x:92%;--y:52%;--s:4px;--d:6s;--dl:-1.5s"></i>
+      <i style="--x:24%;--y:84%;--s:5px;--d:8.5s;--dl:-7s"></i>
+      <i style="--x:74%;--y:79%;--s:7px;--d:9.5s;--dl:-3.5s"></i>
+      <i style="--x:56%;--y:94%;--s:4px;--d:7s;--dl:-5.5s"></i>
+    </div>
+    <button class="orb" id="orb" type="button" aria-label="A small glowing light"><span></span></button>
+    <div class="glow" id="index-glow" aria-hidden="true"></div>
+    <div class="band-inner">
+      <p class="eyebrow" id="index-count"></p>
+      <h2 id="index-title">Index of the collection</h2>
+      <ul class="index" id="index-list"></ul>
+    </div>
+  </section>
+
+  <section class="band" id="about" aria-labelledby="about-title">
+    <canvas id="about-neural" aria-hidden="true"></canvas>
+    <div class="band-inner about-grid">
+      <div class="bio">
+        <p class="eyebrow">American surrealist artist · Painting · Photography · Experimental visual art</p>
+        <h2 id="about-title">Camille Taylor</h2>
+        <p class="statement">Camille Taylor, known professionally as <span class="wm-c">Camicamirobot</span>, is an independent American visual artist based in North Florida. Her multidisciplinary practice explores the intersections of nature, technology, consciousness, and the unknown through psychedelic surrealist painting, photography, and experimental visual imagery.</p>
+        <p>Born in the Appalachian Mountains and raised in Pasco County, Florida, Taylor developed an artistic perspective shaped by the contrasting landscapes of the American Southeast. Her work draws upon organic patterns, biological structures, and the peculiar familiarity of things that appear otherworldly. Saturated colors, anatomical references, extraterrestrial figures, and branching compositions populate imagined environments where the boundaries between the natural and artificial begin to dissolve.</p>
+        <p>Working across traditional and digital mediums, Taylor has maintained the creative identity <span class="wm-c">Camicamirobot</span> for more than a decade. Her background encompasses painting, photography, artistic modeling, and graphic design, reflecting an independent creative practice that extends beyond any single discipline.</p>
+        <p>Her work has been exhibited in independent community spaces, including coffee shop exhibitions in Eugene, Oregon, and acquired by private individuals and local businesses in Boise, Idaho, New Orleans, Louisiana, and other locations. In 2022, her 2020 painting <em>Quantum Earth</em> was acquired by Goodson Gallery in New Orleans and subsequently featured in the gallery's September art giveaway.</p>
+        <p>Currently working amid the springs, forests, and wildlife of North Florida, Taylor continues to investigate the relationship between the observable and the imagined, creating work that invites curiosity rather than prescribing interpretation.</p>
+        <p class="coda"><span class="wm-c">Camicamirobot</span> is an ongoing exploration of a strange and living world.</p>
+      </div>
+      <dl class="contact">
+        <div>
+          <dt>Follow the work in progress</dt>
+          <dd><a href="https://www.instagram.com/camicamirobot/" target="_blank" rel="noopener">Instagram · @camicamirobot</a></dd>
+        </div>
+        <div>
+          <dt>Originals and commissions</dt>
+          <dd><span id="email">camicamirobot@gmail.com</span></dd>
+          <dd><button class="copy" id="copy-email" type="button">Copy email</button></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer class="lungs">
+  <canvas id="lungs" aria-hidden="true"></canvas>
+  <canvas id="sparks" aria-hidden="true"></canvas>
+  <span class="footer-hint" id="footer-hint" aria-hidden="true"></span>
+  <p>© <span id="year"></span> <span class="wm-p">camicami</span><span class="wm-t">robot</span></p>
+</footer>
+
+<div class="exam" id="exam" role="dialog" aria-modal="true" aria-labelledby="exam-title" hidden>
+  <div class="exam-art" id="exam-art"></div>
+  <aside>
+    <p class="cat" id="exam-cat"></p>
+    <h2 id="exam-title"></h2>
+    <dl id="exam-facts"></dl>
+    <p class="note" id="exam-note"></p>
+    <button class="copy share" type="button" id="exam-share">Share link</button>
+    <p class="share-url" id="exam-url" hidden></p>
+    <div class="exam-nav">
+      <button type="button" id="exam-prev">← Previous</button>
+      <button type="button" id="exam-next">Next →</button>
+    </div>
+  </aside>
+  <button class="close" type="button" id="exam-close">Close</button>
+</div>
+
+<div class="vault" id="vault" role="dialog" aria-modal="true" aria-labelledby="vault-title" hidden>
+  <p class="vault-eyebrow"><i aria-hidden="true"></i><span id="vault-name">Hidden gallery</span></p>
+  <div class="vault-art" id="vault-art"></div>
+  <div class="vault-cap">
+    <p class="cat" id="vault-cat"></p>
+    <h2 id="vault-title"></h2>
+  </div>
+  <div class="vault-strip" id="vault-strip" role="group" aria-label="Works in the hidden gallery"></div>
+  <div class="exam-nav vault-nav">
+    <button type="button" id="vault-prev">← Previous</button>
+    <button type="button" id="vault-next">Next →</button>
+  </div>
+  <button class="close" type="button" id="vault-close">Close</button>
+</div>
+
+<script>
+/* =====================================================================
+   THE COLLECTION
+   Edit this list to change what appears on the site.
+   - src:   the image file in the repo, e.g. "alien.jpg". Each local painting also
+            needs a small copy named with "-sm" (e.g. "alien-sm.jpg", about 480px wide)
+            for the ring and index. WP + "..." entries load from the WordPress library.
+   - year, medium, size, note: optional. Leave as "" to hide that line.
+   ===================================================================== */
+const WP = "https://birdswoon.wordpress.com/wp-content/uploads/";
+const WORKS = [
+  /* titles in the first group are working titles until Camille names them;
+     the pieces from WordPress keep the titles they had on the old site */
+  { title: "Alien with DNA", year: "", medium: "", size: "", note: "", src: "alien.jpg" },
+  { title: "Angel Eyes", year: "", medium: "", size: "", note: "", src: WP + "2025/02/47e2b-angel-eyes.jpg" },
+  { title: "Pink Sun", year: "", medium: "", size: "", note: "", src: "pink-sun.jpg" },
+  { title: "Cosmic Eye", year: "", medium: "", size: "", note: "", src: "cosmic-eye.jpg" },
+  { title: "Flower Face", year: "", medium: "", size: "", note: "", src: "flower-face.jpg" },
+  { title: "Salt of the Earth", year: "", medium: "", size: "", note: "", src: WP + "2025/02/d4908-salt-of-the-earth.png" },
+  { title: "DNA Woman", year: "", medium: "", size: "", note: "", src: "dna-woman.jpg" },
+  { title: "Untitled", year: "", medium: "", size: "", note: "", src: WP + "2025/02/f086e-img_9026.jpg", crop: "1,11,95,74" },
+  { title: "Sunset Tree", year: "", medium: "", size: "", note: "", src: "sunset-tree.jpg" },
+  { title: "Dream Visitor", year: "2023", medium: "", size: "", note: "", src: WP + "2025/02/decc5-img_0515.jpg" },
+  { title: "Leaf and Sun", year: "", medium: "", size: "", note: "", src: "leaf-sun.jpg" },
+  { title: "Skull Woman", year: "", medium: "", size: "", note: "", src: WP + "2023/01/skull_woman.jpeg" },
+  { title: "Rain Woman", year: "", medium: "", size: "", note: "", src: "rain-woman.jpg" },
+  { title: "Cloud Valley", year: "", medium: "", size: "", note: "", src: "cloud-valley.jpg" }
+];
+
+/* THE HIDDEN GALLERY
+   Opened by the tiny violet orb beside "Index of the collection".
+   Not listed in the index, the ring, the share pages or the sitemap.
+   - name: shown at the top of the hidden gallery ("" shows just "Hidden gallery")
+   - title, year: optional, like the main list */
+const HIDDEN = {
+  name: "",
+  works: [
+    { title: "Untitled", year: "", src: WP + "2025/02/a6ff0-img_0536.jpg" },
+    { title: "Untitled", year: "", src: WP + "2025/02/939dc-img_1984.jpg" },
+    { title: "Untitled", year: "", src: WP + "2025/02/d312f-img_4082.jpg" },
+    { title: "Complex Daydream", year: "", src: WP + "2022/10/complex_daydream.jpg" },
+    { title: "Untitled", year: "", src: WP + "2022/02/20210628_220557.jpg" },
+    { title: "Untitled", year: "", src: WP + "2021/02/img_07001.jpg" },
+    { title: "Untitled", year: "", src: WP + "2021/02/img_8457.jpg" },
+    { title: "A Trip in the Mountains", year: "", src: WP + "2020/12/a-trip-in-the-mountains-camicamirobot.png" }
+  ]
+};
+
+/* WordPress can resize (and crop, in percent: x,y,w,h) on the fly.
+   Local files: the ring and index use the small "-sm.jpg" copy; the close-up view uses the full file. */
+function sized(src, w, crop) {
+  if (!src.startsWith(WP)) return w <= 600 ? src.replace(/\.jpe?g$/i, "-sm.jpg") : src;
+  if (crop) return "https://i0.wp.com/" + src.replace("https://", "") + "?crop=" + crop + "&w=" + w;
+  return src + "?w=" + w;
+}
+const pad = n => String(n).padStart(2, "0");
+const N = WORKS.length;
+const STEP = 360 / N;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const coarse = window.matchMedia("(pointer: coarse)").matches; /* phones and tablets */
+
+/* every work gets a short name for its link: camicamirobot.com/#/alien-with-dna
+   (keep in step with the share pages, which use the same names) */
+const SLUGS = [];
+WORKS.forEach(w => {
+  const s = w.title.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "work";
+  let k = s, n = 2;
+  while (SLUGS.includes(k)) k = s + "-" + n++;
+  SLUGS.push(k);
+});
+
+/* first visit: say plainly how the ring works, then get out of the way once they've done it */
+const coach = { turned: false, opened: false };
+try { const saved = JSON.parse(localStorage.getItem("ccr-coach") || "{}"); coach.turned = !!saved.turned; coach.opened = !!saved.opened; } catch (err) {}
+function saveCoach() { try { localStorage.setItem("ccr-coach", JSON.stringify(coach)); } catch (err) {} }
+const coachEl = document.getElementById("coach");
+const hintOpen = document.getElementById("hint-open");
+document.getElementById("coach-text").textContent = coarse ? "swipe to turn" : "drag to turn";
+hintOpen.textContent = (coarse ? "tap" : "click") + " the glowing painting to open it";
+if (coach.turned) coachEl.hidden = true;
+if (!coach.opened) hintOpen.classList.add("fresh");
+function markTurned() {
+  if (coach.turned) return;
+  coach.turned = true; saveCoach();
+  coachEl.classList.add("done");
+  setTimeout(() => { coachEl.hidden = true; }, 700);
+}
+function markOpened() {
+  if (coach.opened) return;
+  coach.opened = true; saveCoach();
+  hintOpen.classList.remove("fresh");
+  cards.forEach(c => c.classList.remove("beckon"));
+}
+
+function makeImg(work, w, cls) {
+  const img = new Image();
+  img.src = sized(work.src, w, work.crop);
+  img.alt = work.title + (work.year ? ", " + work.year : "") + ", by camicamirobot";
+  img.loading = "lazy";
+  img.decoding = "async";
+  if (cls) img.className = cls;
+  img.draggable = false;
+  img.addEventListener("error", () => {
+    const d = document.createElement("div");
+    d.className = "missing";
+    d.textContent = work.title;
+    img.replaceWith(d);
+  }, { once: true });
+  return img;
+}
+
+/* ---------------- ring ---------------- */
+const ring = document.getElementById("ring");
+const stage = document.getElementById("top");
+const ticksEl = document.getElementById("ticks");
+const cards = WORKS.map((work, i) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "card";
+  b.setAttribute("aria-label", "Work " + (i + 1) + " of " + N + ": " + work.title);
+  b.appendChild(makeImg(work, 600, "art"));
+  const tag = document.createElement("span");
+  tag.className = "tag";
+  tag.innerHTML = "<b>" + pad(i + 1) + "</b><span></span>";
+  tag.lastChild.textContent = work.year || "—";
+  b.appendChild(tag);
+  /* mouse and touch taps are handled by tapAt() below; this covers Enter/Space on a focused card */
+  b.addEventListener("click", e => { if (e.detail === 0) activateCard(i); });
+  ring.appendChild(b);
+
+  const t = document.createElement("button");
+  t.type = "button";
+  t.className = "tick";
+  t.setAttribute("aria-label", pad(i + 1) + " " + work.title);
+  t.addEventListener("click", () => { goTo(i); markTurned(); });
+  ticksEl.appendChild(t);
+  return b;
+});
+const ticks = [...ticksEl.children];
+
+let radius = 0;
+function layout() {
+  const w = ring.getBoundingClientRect().width;
+  radius = Math.round((w / 2) / Math.tan(Math.PI / N) + w * 0.22);
+  cards.forEach((c, i) => {
+    c.style.transform = "rotateY(" + (i * STEP) + "deg) translateZ(" + radius + "px)";
+  });
+}
+
+let rot = 0, target = 0, vel = 0;
+let dragging = false, moved = false, lastX = 0, lastT = 0;
+let lastInteraction = performance.now();
+let lastFront = -1;
+
+const wrap360 = a => ((a % 360) + 360) % 360;
+function frontIndex() { return Math.round(wrap360(-rot) / STEP) % N; }
+function goTo(i) {
+  const desired = -i * STEP;
+  const diff = ((desired - target) % 360 + 540) % 360 - 180;
+  target += diff;
+  lastInteraction = performance.now();
+  if (reduceMotion) rot = target;
+}
+function snap() { target = Math.round(target / STEP) * STEP; }
+
+function render() {
+  ring.style.transform = "translateZ(" + (-radius) + "px) rotateY(" + rot + "deg)";
+  cards.forEach((c, i) => {
+    const facing = Math.cos((i * STEP + rot) * Math.PI / 180); /* 1 = front, -1 = back */
+    c.style.opacity = (0.18 + 0.82 * Math.max(0, (facing + 0.35) / 1.35)).toFixed(3);
+    c.style.filter = "saturate(" + (0.35 + 0.65 * Math.max(0, facing)).toFixed(2) + ")";
+  });
+  const f = frontIndex();
+  if (f !== lastFront) {
+    if (lastFront !== -1) chime(f);
+    lastFront = f;
+    cards.forEach((c, i) => c.classList.toggle("beckon", !coach.opened && i === f));
+    document.getElementById("readout-cat").textContent = "No. " + pad(f + 1) + " of " + pad(N) + (WORKS[f].year ? " · " + WORKS[f].year : "");
+    document.getElementById("readout-title").textContent = WORKS[f].title;
+    ticks.forEach((t, i) => t.setAttribute("aria-current", i === f ? "true" : "false"));
+    cards.forEach((c, i) => { c.tabIndex = i === f ? 0 : -1; });
+  }
+}
+
+function tick(now) {
+  if (!dragging) {
+    const idle = now - lastInteraction > 5000;
+    if (idle && !reduceMotion && document.getElementById("exam").hidden) {
+      target -= 0.035; /* slow drift when nobody is touching it */
+    } else if (Math.abs(vel) > 0.02) {
+      target += vel;
+      vel *= 0.92;
+      if (Math.abs(vel) <= 0.02) { vel = 0; snap(); }
+    }
+    rot += (target - rot) * (reduceMotion ? 1 : 0.1);
+  }
+  render();
+  requestAnimationFrame(tick);
+}
+
+/* drag: a sideways drag turns the ring; an up-and-down swipe is left alone so the
+   page still scrolls on phones; a short tap (under 8px of movement) opens the painting */
+let startX = 0, startY = 0, activeId = null, axis = null;
+stage.addEventListener("pointerdown", e => {
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  if (e.target.closest(".tick")) return;
+  activeId = e.pointerId; axis = null; moved = false;
+  startX = lastX = e.clientX; startY = e.clientY; lastT = performance.now(); vel = 0;
+});
+window.addEventListener("pointermove", e => {
+  if (e.pointerId !== activeId) return;
+  if (!axis) {
+    const tx = e.clientX - startX, ty = e.clientY - startY;
+    if (Math.hypot(tx, ty) < 8) return;
+    axis = Math.abs(tx) > Math.abs(ty) ? "x" : "y";
+    if (axis === "y") { activeId = null; return; }
+    dragging = true; moved = true;
+    stage.classList.add("dragging");
+    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    markTurned();
+  }
+  const dx = e.clientX - lastX;
+  const now = performance.now();
+  const d = dx * 0.22;
+  rot += d; target = rot;
+  vel = Math.max(-40, Math.min(40, d / Math.max(1, (now - lastT) / 16)));
+  lastX = e.clientX; lastT = now;
+  lastInteraction = now;
+});
+/* the front painting (or the one the ring is settling onto) opens; any other comes forward */
+function activateCard(i) {
+  const settling = Math.round(wrap360(-target) / STEP) % N;
+  if (frontIndex() === i || settling === i) openExam(i); else { goTo(i); markTurned(); }
+}
+/* find the painting under a tap ourselves: phone browsers don't always hit-test
+   3D-rotated elements reliably after the page has scrolled */
+function tapAt(x, y) {
+  let best = -1, bestFacing = 0;
+  cards.forEach((c, i) => {
+    const r = c.getBoundingClientRect();
+    if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+    const facing = Math.cos((i * STEP + rot) * Math.PI / 180);
+    if (facing > bestFacing) { bestFacing = facing; best = i; }
+  });
+  if (best >= 0) activateCard(best);
+}
+function endDrag(e) {
+  if (e.pointerId !== activeId) return;
+  activeId = null;
+  if (!dragging) { if (e.type === "pointerup") tapAt(e.clientX, e.clientY); return; }
+  dragging = false;
+  stage.classList.remove("dragging");
+  if (e.type === "pointercancel" || performance.now() - lastT > 90) vel = 0; /* held still before letting go: no fling */
+  if (Math.abs(vel) >= 8) surprise(); /* a hard fling, roughly 2300px a second */
+  if (Math.abs(vel) < 0.3) { vel = 0; snap(); }
+  if (reduceMotion) { vel = 0; snap(); rot = target; }
+  setTimeout(() => { moved = false; }, 0);
+}
+window.addEventListener("pointerup", endDrag);
+window.addEventListener("pointercancel", endDrag);
+
+/* wheel turns the ring only while hovering it, and only for mostly-horizontal or shift scrolling,
+   so the page still scrolls down normally */
+let wheelAcc = 0;
+stage.addEventListener("wheel", e => {
+  const horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey;
+  if (!horizontal) return;
+  e.preventDefault();
+  wheelAcc += (e.shiftKey ? e.deltaY : e.deltaX);
+  if (Math.abs(wheelAcc) > 40) {
+    markTurned();
+    goTo((frontIndex() + (wheelAcc > 0 ? 1 : -1) + N) % N);
+    wheelAcc = 0;
+  }
+}, { passive: false });
+
+/* keyboard */
+stage.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") { e.preventDefault(); markTurned(); goTo((frontIndex() + 1) % N); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); markTurned(); goTo((frontIndex() - 1 + N) % N); }
+  if (e.key === "Enter" && e.target === stage) { e.preventDefault(); openExam(frontIndex()); }
+});
+
+/* ---------------- index ---------------- */
+const list = document.getElementById("index-list");
+document.getElementById("index-count").textContent = N + " works";
+/* a loose, hand-placed rhythm: varied proportions, widths and drops so the
+   grid reads as a field instead of a table. Repeats if the list grows. */
+const IDX = {
+  ar: ["4 / 5", "1 / 1", "3 / 4", "5 / 6", "4 / 5", "1 / 1", "3 / 4", "4 / 5", "5 / 6", "1 / 1"],
+  w:  ["100%", "84%", "92%", "88%", "100%", "80%", "94%", "86%", "100%", "90%"],
+  js: ["start", "end", "center", "end", "start", "center", "start", "end", "center", "start"],
+  dy: [0, 90, 30, 60, 140, 10, 80, 20, 120, 40]
+};
+const GLOWS = ["var(--magenta)", "var(--cyan)", "var(--gold)"];
+const idxItems = [];
+WORKS.forEach((work, i) => {
+  const li = document.createElement("li");
+  const k = i % IDX.ar.length;
+  li.style.setProperty("--ar", IDX.ar[k]);
+  li.style.setProperty("--w", IDX.w[k]);
+  li.style.setProperty("--js", IDX.js[k]);
+  li.style.setProperty("--dy", IDX.dy[k] + "px");
+  li.style.setProperty("--delay", (-(i * 1.7) % 10).toFixed(1) + "s");
+  li.style.setProperty("--glow-c", GLOWS[i % 3]);
+  idxItems.push({ li, depth: 0.35 + ((i * 37) % 10) / 10 * 0.9 });
+  const b = document.createElement("button");
+  b.type = "button";
+  const th = document.createElement("div");
+  th.className = "thumb";
+  th.appendChild(makeImg(work, 500));
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  const a = document.createElement("span");
+  a.textContent = "No. " + pad(i + 1) + (work.year ? " · " + work.year : "");
+  const t = document.createElement("span");
+  t.textContent = work.title;
+  meta.append(a, t);
+  b.append(th, meta);
+  b.addEventListener("click", () => openExam(i));
+  li.appendChild(b);
+  list.appendChild(li);
+});
+
+/* parallax and a soft light that follows the cursor through the index */
+const idxSection = document.getElementById("index");
+const idxGlow = document.getElementById("index-glow");
+let idxRaf = 0, idxPt = null;
+function idxUpdate() {
+  idxRaf = 0;
+  if (!idxPt) return;
+  const r = idxSection.getBoundingClientRect();
+  const nx = (idxPt.x - r.left) / r.width - 0.5;
+  const ny = (idxPt.y - r.top) / r.height - 0.5;
+  idxGlow.style.transform = "translate(" + (idxPt.x - r.left) + "px," + (idxPt.y - r.top) + "px)";
+  if (!reduceMotion && innerWidth > 560) {
+    idxItems.forEach(({ li, depth }) => {
+      li.style.setProperty("--px", (-nx * depth * 34).toFixed(1) + "px");
+      li.style.setProperty("--py", (-ny * depth * 26).toFixed(1) + "px");
+    });
+  }
+}
+idxSection.addEventListener("pointermove", e => {
+  idxPt = { x: e.clientX, y: e.clientY };
+  idxGlow.classList.add("on");
+  if (!idxRaf) idxRaf = requestAnimationFrame(idxUpdate);
+});
+idxSection.addEventListener("pointerleave", () => {
+  idxPt = null;
+  idxGlow.classList.remove("on");
+  idxItems.forEach(({ li }) => { li.style.setProperty("--px", "0px"); li.style.setProperty("--py", "0px"); });
+});
+
+/* ---------------- examination view ---------------- */
+const exam = document.getElementById("exam");
+let examIndex = 0, returnFocus = null;
+function fillExam(i) {
+  examIndex = i;
+  const w = WORKS[i];
+  const art = document.getElementById("exam-art");
+  art.innerHTML = "";
+  const img = makeImg(w, 1600);
+  img.loading = "eager";
+  art.appendChild(img);
+  document.getElementById("exam-cat").textContent = "No. " + pad(i + 1) + " of " + pad(N);
+  document.getElementById("exam-title").textContent = w.title;
+  const facts = document.getElementById("exam-facts");
+  facts.innerHTML = "";
+  [["Year", w.year], ["Medium", w.medium], ["Size", w.size]].forEach(([k, v]) => {
+    if (!v) return;
+    const row = document.createElement("div");
+    const dt = document.createElement("dt"); dt.textContent = k;
+    const dd = document.createElement("dd"); dd.textContent = v;
+    row.append(dt, dd);
+    facts.appendChild(row);
+  });
+  const note = document.getElementById("exam-note");
+  note.textContent = w.note;
+  note.hidden = !w.note;
+  document.getElementById("exam-url").hidden = true;
+  document.title = w.title + " · camicamirobot";
+}
+
+/* each open painting has its own address (#/alien-with-dna), so the back button
+   closes it and the link can be copied or shared */
+const BASE_TITLE = document.title;
+let examPushed = false, openedAt = 0;
+function workFromHash() {
+  const m = location.hash.match(/^#\/(.+)$/);
+  return m ? SLUGS.indexOf(decodeURIComponent(m[1])) : -1;
+}
+function showWork(i) {
+  fillExam(i);
+  history.replaceState({ work: i }, "", "#/" + SLUGS[i]);
+}
+function openExam(i, fromHistory) {
+  returnFocus = document.activeElement;
+  fillExam(i);
+  if (!fromHistory) { history.pushState({ work: i }, "", "#/" + SLUGS[i]); examPushed = true; }
+  exam.hidden = false;
+  document.body.style.overflow = "hidden";
+  document.getElementById("exam-close").focus();
+  markOpened();
+  openedAt = performance.now();
+}
+function closeExam(fromHistory) {
+  if (exam.hidden) return;
+  exam.hidden = true;
+  document.body.style.overflow = "";
+  document.title = BASE_TITLE;
+  goTo(examIndex);
+  if (returnFocus && returnFocus.focus) returnFocus.focus({ preventScroll: true });
+  if (fromHistory) return;
+  if (examPushed) { examPushed = false; history.back(); }
+  else history.replaceState(null, "", location.pathname + location.search);
+}
+window.addEventListener("popstate", () => {
+  const i = workFromHash();
+  if (i < 0) { examPushed = false; closeExam(true); return; }
+  if (exam.hidden) { openExam(i, true); examPushed = false; } else fillExam(i);
+  goTo(i);
+});
+document.getElementById("exam-close").addEventListener("click", () => closeExam());
+document.getElementById("exam-prev").addEventListener("click", () => showWork((examIndex - 1 + N) % N));
+document.getElementById("exam-next").addEventListener("click", () => showWork((examIndex + 1) % N));
+document.addEventListener("keydown", e => {
+  if (exam.hidden) return;
+  if (e.key === "Escape") closeExam();
+  if (e.key === "ArrowRight") showWork((examIndex + 1) % N);
+  if (e.key === "ArrowLeft") showWork((examIndex - 1 + N) % N);
+});
+
+/* share: phones get the system share sheet; computers copy the link.
+   The link goes to the painting's own page (camicamirobot.com/alien-with-dna),
+   which shows a proper preview when pasted into a message or post. */
+document.getElementById("exam-share").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  const w = WORKS[examIndex];
+  const url = new URL(SLUGS[examIndex], location.href.split("#")[0]).href;
+  if (navigator.share && coarse) {
+    try { await navigator.share({ title: w.title + " · camicamirobot", url }); return; }
+    catch (err) { if (err && err.name === "AbortError") return; }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    btn.textContent = "Link copied";
+    setTimeout(() => { btn.textContent = "Share link"; }, 1800);
+  } catch (err) {
+    const box = document.getElementById("exam-url");
+    box.textContent = url;
+    box.hidden = false;
+  }
+});
+
+/* swipe left or right on the painting to move through the collection */
+const examArt = document.getElementById("exam-art");
+let swipe = null, swiped = false;
+examArt.addEventListener("pointerdown", e => { swipe = { x: e.clientX, y: e.clientY, id: e.pointerId }; swiped = false; });
+examArt.addEventListener("pointerup", e => {
+  if (!swipe || e.pointerId !== swipe.id) return;
+  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+  swipe = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    swiped = true;
+    showWork((examIndex + (dx < 0 ? 1 : -1) + N) % N);
+  }
+});
+examArt.addEventListener("pointercancel", () => { swipe = null; });
+exam.addEventListener("click", e => {
+  if (swiped) { swiped = false; return; }
+  if (performance.now() - openedAt < 500) return; /* the tap that opened it, arriving late as a click */
+  if (e.target === exam || e.target.id === "exam-art") closeExam();
+});
+
+/* ---------------- the hidden gallery ----------------
+   The orb blooms open into a violet room holding the HIDDEN works.
+   Its address is #/hidden/1, #/hidden/2 ... so it can be passed on once found. */
+const vault = document.getElementById("vault");
+const orbBtn = document.getElementById("orb");
+const VN = HIDDEN.works.length;
+let vIndex = 0, vPushed = false, vReturn = null;
+document.getElementById("vault-name").textContent = HIDDEN.name ? "Hidden gallery · " + HIDDEN.name : "Hidden gallery";
+const vStrip = document.getElementById("vault-strip");
+const vThumbs = HIDDEN.works.map((w, i) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.setAttribute("aria-label", pad(i + 1) + " " + w.title);
+  b.appendChild(makeImg(w, 160));
+  b.addEventListener("click", () => showVault(i));
+  vStrip.appendChild(b);
+  return b;
+});
+function fillVault(i) {
+  vIndex = i;
+  const w = HIDDEN.works[i];
+  const art = document.getElementById("vault-art");
+  art.innerHTML = "";
+  const img = makeImg(w, 1600);
+  img.loading = "eager";
+  art.appendChild(img);
+  document.getElementById("vault-cat").textContent = "No. " + pad(i + 1) + " of " + pad(VN) + (w.year ? " · " + w.year : "");
+  document.getElementById("vault-title").textContent = w.title;
+  vThumbs.forEach((t, k) => t.setAttribute("aria-current", k === i ? "true" : "false"));
+  const t = vThumbs[i];
+  vStrip.scrollLeft = t.offsetLeft - (vStrip.clientWidth - t.offsetWidth) / 2;
+  document.title = w.title + " · camicamirobot";
+}
+function vaultFromHash() {
+  const m = location.hash.match(/^#\/hidden(?:\/(\d+))?$/);
+  if (!m) return -1;
+  return Math.min(Math.max((parseInt(m[1] || "1", 10) || 1) - 1, 0), VN - 1);
+}
+function showVault(i) { fillVault(i); history.replaceState({ vault: i }, "", "#/hidden/" + (i + 1)); }
+function openVault(i, fromHistory) {
+  vReturn = document.activeElement;
+  const r = orbBtn.getBoundingClientRect();
+  vault.style.setProperty("--ox", Math.round(r.left + r.width / 2) + "px");
+  vault.style.setProperty("--oy", Math.round(r.top + r.height / 2) + "px");
+  vault.hidden = false;
+  fillVault(i);
+  if (!fromHistory) { history.pushState({ vault: i }, "", "#/hidden/" + (i + 1)); vPushed = true; }
+  vault.classList.remove("opening"); void vault.offsetWidth;
+  if (!reduceMotion) vault.classList.add("opening");
+  document.body.style.overflow = "hidden";
+  document.getElementById("vault-close").focus({ preventScroll: true });
+  chime(7, true);
+}
+function closeVault(fromHistory) {
+  if (vault.hidden) return;
+  vault.hidden = true;
+  document.body.style.overflow = "";
+  document.title = BASE_TITLE;
+  if (vReturn && vReturn.focus) vReturn.focus({ preventScroll: true });
+  if (fromHistory) return;
+  if (vPushed) { vPushed = false; history.back(); }
+  else history.replaceState(null, "", location.pathname + location.search);
+}
+orbBtn.addEventListener("click", () => openVault(0));
+document.getElementById("vault-close").addEventListener("click", () => closeVault());
+document.getElementById("vault-prev").addEventListener("click", () => showVault((vIndex - 1 + VN) % VN));
+document.getElementById("vault-next").addEventListener("click", () => showVault((vIndex + 1) % VN));
+document.addEventListener("keydown", e => {
+  if (vault.hidden) return;
+  if (e.key === "Escape") closeVault();
+  if (e.key === "ArrowRight") showVault((vIndex + 1) % VN);
+  if (e.key === "ArrowLeft") showVault((vIndex - 1 + VN) % VN);
+});
+window.addEventListener("popstate", () => {
+  const v = vaultFromHash();
+  if (v < 0) { vPushed = false; closeVault(true); return; }
+  if (vault.hidden) { openVault(v, true); vPushed = false; } else fillVault(v);
+});
+/* swipe left or right on the painting to move through the hidden works */
+const vArt = document.getElementById("vault-art");
+let vSwipe = null;
+vArt.addEventListener("pointerdown", e => { vSwipe = { x: e.clientX, y: e.clientY, id: e.pointerId }; });
+vArt.addEventListener("pointerup", e => {
+  if (!vSwipe || e.pointerId !== vSwipe.id) return;
+  const dx = e.clientX - vSwipe.x, dy = e.clientY - vSwipe.y;
+  vSwipe = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) showVault((vIndex + (dx < 0 ? 1 : -1) + VN) % VN);
+});
+vArt.addEventListener("pointercancel", () => { vSwipe = null; });
+
+/* ---------------- contact ---------------- */
+document.getElementById("year").textContent = new Date().getFullYear();
+document.getElementById("copy-email").addEventListener("click", e => {
+  const btn = e.currentTarget;
+  const text = document.getElementById("email").textContent;
+  const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy email", 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, () => selectEmail());
+  } else selectEmail();
+  function selectEmail() {
+    const r = document.createRange();
+    r.selectNodeContents(document.getElementById("email"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+});
+
+/* ---------------- vein field ----------------
+   Veins grow from the edges, wander, branch, and lean toward the pointer.
+   Each vein system takes one palette color; branches sometimes switch. */
+const VEIN = [
+  [195, 219, 9],   /* Alien Chartreuse */
+  [245, 9, 131],   /* Electric Magenta */
+  [37, 200, 222]   /* Cosmic Cyan */
+];
+const cv = document.getElementById("field");
+const cx = cv.getContext("2d");
+const mv = document.getElementById("motes");
+const mx = mv.getContext("2d");
+const sv = document.getElementById("swarm");
+const sx = sv.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+const pointer = { x: null, y: null };
+const hyphae = [];
+const MAX = 140;
+
+function resizeField() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  [cv, mv, sv].forEach(c => { c.width = W * DPR; c.height = H * DPR; });
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  mx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  sx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  cx.fillStyle = "#17151b";
+  cx.fillRect(0, 0, W, H);
+  fillMotes();
+}
+function seed() {
+  const side = Math.floor(Math.random() * 4);
+  let x, y, a;
+  if (side === 0) { x = Math.random() * W; y = H + 2; a = -Math.PI / 2; }
+  else if (side === 1) { x = -2; y = Math.random() * H; a = 0; }
+  else if (side === 2) { x = W + 2; y = Math.random() * H; a = Math.PI; }
+  else { x = Math.random() * W; y = H * (0.6 + Math.random() * 0.4); a = -Math.PI / 2; }
+  hyphae.push({ x, y, a: a + (Math.random() - 0.5) * 0.8, life: 260 + Math.random() * 320, gen: 0, c: Math.floor(Math.random() * 3) });
+}
+function growStep() {
+  if (hyphae.length < 8) seed();
+  for (let k = hyphae.length - 1; k >= 0; k--) {
+    const h = hyphae[k];
+    h.a += (Math.random() - 0.5) * 0.32;
+    if (pointer.x !== null) {
+      const want = Math.atan2(pointer.y - h.y, pointer.x - h.x);
+      let d = want - h.a;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      const dist = Math.hypot(pointer.x - h.x, pointer.y - h.y);
+      if (dist < 420) h.a += d * 0.035 * (1 - dist / 420);
+    }
+    const nx = h.x + Math.cos(h.a) * 1.3;
+    const ny = h.y + Math.sin(h.a) * 1.3;
+    const alpha = Math.min(0.6, h.life / 380) * (1 - h.gen * 0.09);
+    const [r, g, b] = VEIN[h.c];
+    cx.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + Math.max(0.05, alpha).toFixed(3) + ")";
+    cx.lineWidth = Math.max(0.35, 1.25 - h.gen * 0.18);
+    cx.beginPath(); cx.moveTo(h.x, h.y); cx.lineTo(nx, ny); cx.stroke();
+    h.x = nx; h.y = ny; h.life -= 1;
+    if (Math.random() < 0.011 && hyphae.length < MAX && h.gen < 6) {
+      const c = Math.random() < 0.18 ? (h.c + 1 + Math.floor(Math.random() * 2)) % 3 : h.c;
+      hyphae.push({ x: h.x, y: h.y, a: h.a + (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random() * 0.6), life: h.life * 0.7, gen: h.gen + 1, c });
+    }
+    const dead = h.life <= 0 || h.x < -20 || h.x > W + 20 || h.y < -20 || h.y > H + 20;
+    if (dead) {
+      if (h.life <= 0 && Math.random() < 0.5) spore(h.x, h.y, h.c); /* a spent tip sheds a pixel */
+      hyphae.splice(k, 1);
+    }
+  }
+}
+
+/* ---------------- drifting pixels ----------------
+   Square motes on a 2px grid that float upward, sway, twinkle,
+   and scatter away from the pointer. Some are shed by dying veins. */
+const motes = [];
+const GRID = 2;
+function moteCap() { return Math.min(130, Math.round(W * H / 11000)); }
+function newMote(x, y, c, fresh) {
+  const sizes = [2, 2, 2, 4, 4, 6];
+  return {
+    x, y, c,
+    s: sizes[Math.floor(Math.random() * sizes.length)],
+    vx: (Math.random() - 0.5) * 0.25,
+    vy: -(0.08 + Math.random() * 0.32),
+    ph: Math.random() * Math.PI * 2,
+    sp: 0.01 + Math.random() * 0.03,
+    born: fresh ? 0 : 1
+  };
+}
+function fillMotes() {
+  motes.length = 0;
+  const n = moteCap();
+  for (let i = 0; i < n; i++) motes.push(newMote(Math.random() * W, Math.random() * H, Math.floor(Math.random() * 3), false));
+  drawMotes();
+}
+function spore(x, y, c) {
+  if (motes.length >= moteCap() + 30) motes.shift();
+  motes.push(newMote(x, y, c, true));
+}
+function stepMotes() {
+  for (const m of motes) {
+    m.ph += m.sp;
+    m.x += m.vx + Math.sin(m.ph * 0.7) * 0.12;
+    m.y += m.vy;
+    if (m.born < 1) m.born = Math.min(1, m.born + 0.02);
+    if (pointer.x !== null) {
+      const dx = m.x - pointer.x, dy = m.y - pointer.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < 130 * 130 && d2 > 1) {
+        const f = (1 - Math.sqrt(d2) / 130) * 1.4;
+        const d = Math.sqrt(d2);
+        m.x += dx / d * f; m.y += dy / d * f;
+      }
+    }
+    if (m.y < -12) { m.y = H + 12; m.x = Math.random() * W; }
+    if (m.x < -12) m.x = W + 12;
+    if (m.x > W + 12) m.x = -12;
+  }
+}
+function drawMotes() {
+  mx.clearRect(0, 0, W, H);
+  for (const m of motes) {
+    const [r, g, b] = VEIN[m.c];
+    const a = (0.35 + 0.55 * (0.5 + 0.5 * Math.sin(m.ph * 2))) * m.born;
+    mx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a.toFixed(3) + ")";
+    mx.fillRect(Math.round(m.x / GRID) * GRID, Math.round(m.y / GRID) * GRID, m.s, m.s);
+  }
+}
+
+/* ---------------- cursor swarm ----------------
+   A small halo of tiny pixels circles the cursor. Moving the cursor
+   sheds more of them, which swirl, drift off and fade. */
+const swarm = [];
+const HALO = 200;
+const SWARM_MAX = 1400;
+let lastEmit = 0;
+/* Atomic: about half the halo is a tight nucleus at the cursor; the rest are
+   electrons racing along three tilted elliptical orbits around it. */
+const ORBIT_TILTS = [0, Math.PI / 3, -Math.PI / 3];
+function swarmPixel(x, y, orbit) {
+  const core = orbit && Math.random() < 0.5;
+  const ring = Math.floor(Math.random() * 3);
+  return {
+    x, y,
+    c: Math.floor(Math.random() * 3),
+    /* dust: mostly a single screen pixel, a few slightly larger grains */
+    s: Math.random() < 0.85 ? 1 / DPR + (DPR > 1 ? 0.5 * Math.random() : 0) : 1.5,
+    orbit,
+    core,
+    tilt: ORBIT_TILTS[ring] + (Math.random() - 0.5) * 0.12,
+    ang: Math.random() * Math.PI * 2,
+    rad: core ? 1 + Math.pow(Math.random(), 1.8) * 6 : 16 + Math.random() * 10,
+    flat: 0.28 + Math.random() * 0.08, /* how squashed each electron's orbit is */
+    spin: core
+      ? (Math.random() < 0.5 ? -1 : 1) * (0.02 + Math.random() * 0.05)
+      : (ring === 1 ? -1 : 1) * (0.06 + Math.random() * 0.04),
+    vx: (Math.random() - 0.5) * 0.7,
+    vy: (Math.random() - 0.5) * 0.7 - 0.1,
+    life: core ? 0.8 + Math.random() * 0.2 : 0.55 + Math.random() * 0.45,
+    decay: orbit ? 0 : 0.008 + Math.random() * 0.014
+  };
+}
+function emit(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const spread = Math.random() < 0.65 ? 6 : 16; /* most of the trail leaves from close to the cursor */
+    const p = swarmPixel(x + (Math.random() - 0.5) * spread, y + (Math.random() - 0.5) * spread, false);
+    /* swirl around the point it left */
+    const a = Math.atan2(p.y - y, p.x - x) + Math.PI / 2;
+    p.vx += Math.cos(a) * 0.35; p.vy += Math.sin(a) * 0.35;
+    swarm.push(p);
+  }
+  if (swarm.length > SWARM_MAX) swarm.splice(0, swarm.length - SWARM_MAX);
+}
+/* Shake: quick back-and-forth cursor movement charges "shake" (0 = calm).
+   It swells and wobbles the orbits, rattles the nucleus, speeds everything
+   up and flings electrons loose; it settles back on its own. */
+let shake = 0, shakeVx = 0, shakeVy = 0, shakeT = 0;
+function feelShake(dx, dy) {
+  const now = performance.now();
+  const dt = Math.max(8, now - shakeT);
+  const vx = dx / dt, vy = dy / dt;
+  const reversed = (vx * shakeVx < 0 && Math.abs(vx) > 0.4) || (vy * shakeVy < 0 && Math.abs(vy) > 0.4);
+  if (reversed) shake += 0.22;
+  shake += Math.min(0.04, Math.hypot(vx, vy) * 0.008);
+  shake = Math.min(1.6, shake);
+  if (Math.abs(vx) > 0.05) shakeVx = vx;
+  if (Math.abs(vy) > 0.05) shakeVy = vy;
+  shakeT = now;
+}
+function stepSwarm() {
+  const here = pointer.x !== null;
+  let orbiters = 0;
+  shake *= 0.95;
+  if (shake < 0.002) shake = 0;
+  const e = shake, e1 = Math.min(1, shake);
+  const wob = performance.now() * 0.02;
+  for (let i = swarm.length - 1; i >= 0; i--) {
+    const p = swarm[i];
+    if (p.orbit) {
+      if (!here) { p.orbit = false; p.decay = 0.02; continue; }
+      orbiters++;
+      p.ang += p.spin * (1 + e * 3);
+      let tx, ty;
+      if (p.core) {
+        /* the nucleus jostles in place, and rattles hard when shaken */
+        const jit = 1.2 + e * 9;
+        const r = p.rad * (1 + e * 1.6);
+        tx = pointer.x + Math.cos(p.ang) * r + (Math.random() - 0.5) * jit;
+        ty = pointer.y + Math.sin(p.ang) * r + (Math.random() - 0.5) * jit;
+      } else {
+        /* electrons: a point on a flattened ellipse, rotated to its orbit's tilt;
+           shaking swells the orbit and makes its plane wobble */
+        const r = p.rad * (1 + e * 1.3);
+        const tilt = p.tilt + Math.sin(wob + p.tilt * 5) * e * 0.9;
+        const ex = Math.cos(p.ang) * r;
+        const ey = Math.sin(p.ang) * r * (p.flat + e1 * 0.35);
+        const ct = Math.cos(tilt), st = Math.sin(tilt);
+        tx = pointer.x + ex * ct - ey * st;
+        ty = pointer.y + ex * st + ey * ct;
+        /* a hard shake knocks electrons loose */
+        if (e > 0.55 && Math.random() < 0.025 * e) {
+          p.orbit = false;
+          const dx = p.x - pointer.x, dy = p.y - pointer.y, d = Math.hypot(dx, dy) || 1;
+          const kick = 1.2 + e * 2.2;
+          p.vx = dx / d * kick + (Math.random() - 0.5);
+          p.vy = dy / d * kick + (Math.random() - 0.5);
+          p.decay = 0.01 + Math.random() * 0.015;
+          continue;
+        }
+      }
+      const k = (p.core ? 0.3 : 0.45) * (1 - e1 * 0.55); /* lag behind when shaken, so it sloshes */
+      p.x += (tx - p.x) * k;
+      p.y += (ty - p.y) * k;
+    } else {
+      p.x += p.vx + (Math.random() - 0.5) * 0.35; /* a little jitter, like dust in a sunbeam */
+      p.y += p.vy + (Math.random() - 0.5) * 0.35;
+      p.vx *= 0.97; p.vy = p.vy * 0.97 - 0.005; /* drift up like the background pixels */
+      p.life -= p.decay;
+      if (p.life <= 0) swarm.splice(i, 1);
+    }
+  }
+  if (here) for (let k = orbiters; k < HALO; k++) swarm.push(swarmPixel(pointer.x, pointer.y, true));
+}
+function drawSwarm() {
+  sx.clearRect(0, 0, W, H);
+  if (!document.getElementById("exam").hidden) return;
+  for (const p of swarm) {
+    const [r, g, b] = VEIN[p.c];
+    const tw = 0.7 + 0.3 * Math.sin(p.ang * 4 + p.x * 0.05);
+    sx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + (p.life * tw).toFixed(3) + ")";
+    sx.fillRect(Math.round(p.x * DPR) / DPR, Math.round(p.y * DPR) / DPR, p.s, p.s);
+  }
+}
+
+let fadeTick = 0;
+function fieldLoop() {
+  growStep(); growStep();
+  if (++fadeTick % 3 === 0) { cx.fillStyle = "rgba(23,21,27,0.035)"; cx.fillRect(0, 0, W, H); }
+  stepMotes();
+  drawMotes();
+  stepSwarm();
+  drawSwarm();
+  requestAnimationFrame(fieldLoop);
+}
+window.addEventListener("pointermove", e => {
+  const px = pointer.x, py = pointer.y;
+  pointer.x = e.clientX; pointer.y = e.clientY;
+  if (reduceMotion || px === null) return;
+  feelShake(e.clientX - px, e.clientY - py);
+  const now = performance.now();
+  const dist = Math.hypot(e.clientX - px, e.clientY - py);
+  if (now - lastEmit > 16 && dist > 2) {
+    emit(e.clientX, e.clientY, Math.min(18, 4 + Math.floor(dist / 4)));
+    lastEmit = now;
+  }
+}, { passive: true });
+window.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") { pointer.x = null; pointer.y = null; } });
+document.addEventListener("pointerleave", () => { pointer.x = null; pointer.y = null; });
+
+/* ---------------- footer: lungs and nerves ----------------
+   Two sheer bronchial trees hang from the top edge (a cyan one and a magenta
+   one, slightly offset, like paired vessels in an anatomy plate), and smaller
+   vessel trees climb in from the lower corners. Nerve cells sit among them:
+   a soft cell body, fine branching dendrites, and an axon that reaches toward
+   a vessel tip and stops just short of it, where a dotted synapse crosses the
+   gap. Where a cyan tip and a magenta tip nearly touch, a synapse joins them.
+   Every stroke gets its own transparency and nothing is drawn solid. It grows
+   in from the top edge once the footer scrolls into view, then breathes, and now and then
+   a spark crosses a synapse. */
+const lv = document.getElementById("lungs");
+const lx = lv.getContext("2d");
+const kv = document.getElementById("sparks");
+const kx = kv.getContext("2d");
+let lungSegs = [], lungTips = [], neurons = [], synapses = [], lungMaxD = 0;
+let lungGrown = false, lungStarted = false, lungW = 0, lungH = 0, lungDrawn = 0;
+const tint = (c, a) => "rgba(" + VEIN[c][0] + "," + VEIN[c][1] + "," + VEIN[c][2] + "," + Math.max(0, a).toFixed(3) + ")";
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function sampleQuad(x0, y0, qx, qy, x1, y1, n) {
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    pts.push([u * u * x0 + 2 * u * t * qx + t * t * x1, u * u * y0 + 2 * u * t * qy + t * t * y1]);
+  }
+  return pts;
+}
+function buildLungs() {
+  const r = lv.getBoundingClientRect();
+  lungW = r.width; lungH = r.height;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  [lv, kv].forEach(c => { c.width = lungW * dpr; c.height = lungH * dpr; });
+  lx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  kx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  lx.clearRect(0, 0, lungW, lungH);
+  kx.clearRect(0, 0, lungW, lungH);
+  lungSegs = []; lungTips = []; neurons = []; synapses = []; lungMaxD = 0;
+
+  const scale = Math.min(lungH / 300, lungW / 700);
+  const fine = Math.max(0.7, scale);
+  const maxDepth = lungW < 600 ? 8 : 10;
+  const veil = mulberry32(7); /* each stroke's own transparency */
+
+  function branch(rnd, x, y, a, len, wd, d, c, parent) {
+    const ex = x + Math.cos(a) * len, ey = y + Math.sin(a) * len;
+    const bend = (rnd() - 0.5) * len * 0.35;
+    const qx = (x + ex) / 2 + Math.cos(a + Math.PI / 2) * bend;
+    const qy = (y + ey) / 2 + Math.sin(a + Math.PI / 2) * bend;
+    const alpha = (0.36 - (d / maxDepth) * 0.24) * (0.4 + veil() * 0.6) * (c === 0 ? 0.75 : 1);
+    const seg = { x, y, qx, qy, ex, ey, wd: wd * 0.85, d, c, alpha, parent, vessel: true };
+    lungSegs.push(seg);
+    lungMaxD = Math.max(lungMaxD, d);
+    if (d >= maxDepth || len < 3) { lungTips.push({ x: ex, y: ey, c }); return; }
+    const spread = 0.34 + rnd() * 0.3;
+    const lean = rnd();
+    const f = 0.72 + rnd() * 0.12;
+    branch(rnd, ex, ey, a - spread * (0.55 + lean * 0.7), len * f, wd * 0.7, d + 1, c, seg);
+    branch(rnd, ex, ey, a + spread * (0.55 + (1 - lean) * 0.7), len * (f - 0.04 + rnd() * 0.08), wd * 0.7, d + 1, c, seg);
+  }
+
+  /* the trachea hangs from the top edge and the bronchi fan down and out, like lungs */
+  const cxm = lungW / 2;
+  const trachea = 54 * scale;
+  const carina = trachea - 6;
+  [[2, 0, 0.0], [1, 11, 0.07]].forEach(([c, seedOff, offset]) => {
+    const rnd = mulberry32(42 + seedOff);
+    const ox = offset * 40 * scale;
+    const root = { x: cxm + ox, y: -6, qx: cxm + ox, qy: carina / 2, ex: cxm + ox, ey: carina, wd: 5 * scale, d: 0, c, alpha: 0.24, parent: null, vessel: true };
+    lungSegs.push(root);
+    branch(rnd, cxm + ox, carina, Math.PI / 2 + 0.78 + offset, 70 * scale, 6.5 * scale, 1, c, root);
+    branch(rnd, cxm + ox, carina, Math.PI / 2 - 0.78 + offset, 70 * scale, 6.5 * scale, 1, c, root);
+  });
+  /* smaller vessel trees climbing in from the lower corners */
+  [[0.06, -1.05, 0], [0.94, -2.09, 0], [0.24, -1.35, 1], [0.76, -1.79, 2]].forEach(([fx, a, c], i) => {
+    branch(mulberry32(90 + i), lungW * fx, lungH + 4, a, 48 * scale, 4 * scale, 2, c, null);
+  });
+
+  /* nerve cells, kept off the centre where the copyright line sits */
+  const nr = mulberry32(314);
+  const nerveD = maxDepth + 1;
+  function dendrite(x, y, a, len, depth, c) {
+    const ex = x + Math.cos(a) * len, ey = y + Math.sin(a) * len;
+    const bend = (nr() - 0.5) * len * 0.6;
+    const qx = (x + ex) / 2 + Math.cos(a + Math.PI / 2) * bend;
+    const qy = (y + ey) / 2 + Math.sin(a + Math.PI / 2) * bend;
+    lungSegs.push({ x, y, qx, qy, ex, ey, wd: Math.max(0.35, 0.95 - depth * 0.22), d: nerveD + depth, c, alpha: (0.34 - depth * 0.07) * (0.5 + veil() * 0.5) });
+    if (depth < 3 && len > 5) {
+      dendrite(ex, ey, a - 0.3 - nr() * 0.45, len * (0.6 + nr() * 0.15), depth + 1, c);
+      if (nr() < 0.8) dendrite(ex, ey, a + 0.3 + nr() * 0.45, len * (0.6 + nr() * 0.15), depth + 1, c);
+    }
+  }
+  const count = lungW < 600 ? 5 : 9;
+  for (let k = 0; k < count; k++) {
+    let x, y, tries = 0;
+    do { x = lungW * (0.05 + nr() * 0.9); y = lungH * (0.24 + nr() * 0.56); tries++; }
+    while ((Math.abs(x - cxm) < lungW * 0.13 || neurons.some(n => Math.hypot(n.x - x, n.y - y) < 70 * fine)) && tries < 30);
+    const c = Math.floor(nr() * 3);
+    neurons.push({ x, y, r: (2.2 + nr() * 2) * fine, c, a: 0.2 + nr() * 0.24 });
+    const nd = 4 + Math.floor(nr() * 4);
+    for (let j = 0; j < nd; j++) dendrite(x, y, (j / nd) * Math.PI * 2 + nr() * 0.6, (12 + nr() * 14) * fine, 0, c);
+    /* the axon wanders toward the nearest vessel tip and stops just short of it */
+    let best = null, bd = Infinity;
+    for (const t of lungTips) { const dd = Math.hypot(t.x - x, t.y - y); if (dd > 30 && dd < bd) { bd = dd; best = t; } }
+    if (best && bd < lungW * 0.32) {
+      const ang = Math.atan2(best.y - y, best.x - x);
+      const bx = best.x - Math.cos(ang) * 5, by = best.y - Math.sin(ang) * 5;
+      const amp = (2 + nr() * 4) * fine, waves = 1.5 + nr() * 2.5, steps = 28, poly = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps, w = Math.sin(t * Math.PI * waves) * amp * Math.sin(t * Math.PI);
+        poly.push([x + (bx - x) * t - Math.sin(ang) * w, y + (by - y) * t + Math.cos(ang) * w]);
+      }
+      lungSegs.push({ poly, wd: 0.75, d: nerveD + 1, c, alpha: 0.16 + nr() * 0.2 });
+      const syn = { pts: poly.concat([[best.x, best.y]]), cleft: [bx, by, best.x, best.y], c, ends: [[bx, by]] };
+      synapses.push(syn);
+      neurons[neurons.length - 1].syn = syn;
+    }
+  }
+  /* where a cyan tip and a magenta tip nearly touch, a dotted synapse joins them */
+  const cyan = lungTips.filter(t => t.c === 2), magenta = lungTips.filter(t => t.c === 1);
+  let made = 0;
+  for (const a of cyan) {
+    if (made >= 36) break;
+    for (const b of magenta) {
+      const dd = Math.hypot(a.x - b.x, a.y - b.y);
+      if (dd > 6 && dd < 26 * fine && nr() < 0.4) {
+        const mx = (a.x + b.x) / 2 + (nr() - 0.5) * 12, my = (a.y + b.y) / 2 + (nr() - 0.5) * 12;
+        synapses.push({ pts: sampleQuad(a.x, a.y, mx, my, b.x, b.y, 10), c: 0, ends: [[a.x, a.y], [b.x, b.y]], bridge: true });
+        made++; break;
+      }
+    }
+  }
+  lungMaxD = Math.max(lungMaxD, nerveD + 3);
+
+  /* the beads, synapse crossings, boutons and cell bodies, each placed by height
+     so they appear as the growth front reaches them */
+  const dots = mulberry32(5);
+  lungMarks = [];
+  for (const t of lungTips) {
+    if (dots() < 0.65) continue;
+    lungMarks.push({ top: t.y, kind: "bead", x: t.x, y: t.y, a: 0.12 + dots() * 0.24, r: 0.8 + dots() * 0.8 });
+  }
+  for (const s of synapses) {
+    const pts = s.bridge ? s.pts : [[s.cleft[0], s.cleft[1]], [s.cleft[2], s.cleft[3]]];
+    lungMarks.push({ top: Math.min(...pts.map(q => q[1])), kind: "cleft", pts, c: s.c, a: 0.22 + dots() * 0.18 });
+  }
+  for (const s of synapses) for (const [x, y] of s.ends) lungMarks.push({ top: y, kind: "bouton", x, y, c: s.c, a: 0.3 + dots() * 0.2 });
+  for (const n of neurons) lungMarks.push({ top: n.y - n.r * 3, kind: "soma", n });
+
+  /* everything is drawn in order of its highest point, so it grows from the top edge down */
+  lungSegs.forEach(s => { s.top = s.poly ? Math.min(...s.poly.map(q => q[1])) : Math.min(s.y, s.qy, s.ey); });
+  lungSegs.sort((p, q) => p.top - q.top);
+  lungMarks.sort((p, q) => p.top - q.top);
+  lungDrawn = 0; marksDrawn = 0;
+  if (lungGrown || reduceMotion) drawLungsTo(Infinity);
+}
+let lungMarks = [], marksDrawn = 0;
+function drawMark(m) {
+  if (m.kind === "bead") {
+    lx.fillStyle = tint(0, m.a);
+    lx.beginPath(); lx.arc(m.x, m.y, m.r, 0, Math.PI * 2); lx.fill();
+  } else if (m.kind === "cleft") {
+    lx.setLineDash([1, 3]);
+    lx.strokeStyle = tint(m.c, m.a);
+    lx.lineWidth = 0.8;
+    lx.beginPath(); lx.moveTo(m.pts[0][0], m.pts[0][1]);
+    for (let i = 1; i < m.pts.length; i++) lx.lineTo(m.pts[i][0], m.pts[i][1]);
+    lx.stroke();
+    lx.setLineDash([]);
+  } else if (m.kind === "bouton") {
+    lx.fillStyle = tint(m.c, m.a);
+    lx.beginPath(); lx.arc(m.x, m.y, 1.3, 0, Math.PI * 2); lx.fill();
+  } else {
+    /* a cell body: a soft glow with a pale nucleus, never solid */
+    const n = m.n;
+    const g = lx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 3);
+    g.addColorStop(0, tint(n.c, n.a));
+    g.addColorStop(0.4, tint(n.c, n.a * 0.45));
+    g.addColorStop(1, tint(n.c, 0));
+    lx.fillStyle = g;
+    lx.beginPath(); lx.arc(n.x, n.y, n.r * 3, 0, Math.PI * 2); lx.fill();
+    lx.fillStyle = "rgba(236,230,220," + (n.a * 0.7).toFixed(3) + ")";
+    lx.beginPath(); lx.arc(n.x, n.y, n.r * 0.4, 0, Math.PI * 2); lx.fill();
+  }
+}
+/* draw every stroke and mark whose highest point is above `front` (in px from the top) */
+function drawLungsTo(front) {
+  lx.lineCap = "round";
+  for (; lungDrawn < lungSegs.length && lungSegs[lungDrawn].top < front; lungDrawn++) {
+    const s = lungSegs[lungDrawn];
+    lx.strokeStyle = tint(s.c, s.alpha);
+    lx.shadowColor = tint(s.c, s.alpha * 0.5);
+    lx.shadowBlur = s.d < 3 ? 5 : 0;
+    lx.lineWidth = Math.max(0.35, s.wd);
+    lx.beginPath();
+    if (s.poly) { lx.moveTo(s.poly[0][0], s.poly[0][1]); for (let i = 1; i < s.poly.length; i++) lx.lineTo(s.poly[i][0], s.poly[i][1]); }
+    else { lx.moveTo(s.x, s.y); lx.quadraticCurveTo(s.qx, s.qy, s.ex, s.ey); }
+    lx.stroke();
+  }
+  lx.shadowBlur = 0;
+  for (; marksDrawn < lungMarks.length && lungMarks[marksDrawn].top < front; marksDrawn++) drawMark(lungMarks[marksDrawn]);
+}
+function growLungs() {
+  if (lungStarted) return;
+  lungStarted = true;
+  if (reduceMotion) { lungGrown = true; drawLungsTo(Infinity); return; }
+  /* a growth front sweeps down from the top edge of the footer */
+  const t0 = performance.now(), DUR = 3400;
+  (function frame(now) {
+    const p = Math.min(1, (now - t0) / DUR);
+    const eased = 1 - Math.pow(1 - p, 2.2);
+    drawLungsTo(p === 1 ? Infinity : -8 + eased * (lungH + 16));
+    if (p < 1) requestAnimationFrame(frame);
+    else { lungGrown = true; lv.classList.add("breathing"); kv.classList.add("breathing"); footerEl.classList.add("alive"); startSparks(); showFooterHint(); }
+  })(t0);
+}
+/* ---------------- the footer comes alive ----------------
+   Once it has grown, the footer answers the visitor:
+   - near a nerve cell, the cell warms up and fires a spark down its axon
+   - passing over a vessel sends a pulse up that branch toward the airway
+   - a click or tap sends a ring outward that fires every synapse it crosses
+   Sparks also cross the synapses now and then on their own. */
+const footerEl = document.querySelector("footer");
+const footerHint = document.getElementById("footer-hint");
+footerHint.textContent = coarse ? "drag through it · tap to send a signal" : "move through it · click to send a signal";
+let sparks = [], traces = [], ripples = [], footerRaf = 0, footerSeen = false, nextSpark = 0;
+let fPointer = null, lastTraceSeg = null, lastTraceAt = 0, hintTimer = 0;
+function toFooter(e) {
+  const r = lv.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * lungW / r.width, y: (e.clientY - r.top) * lungH / r.height };
+}
+function glow(x, y, r, c, a) {
+  const g = kx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, "rgba(236,230,220," + Math.min(0.6, a).toFixed(3) + ")");
+  g.addColorStop(0.3, tint(c, a * 0.65));
+  g.addColorStop(1, tint(c, 0));
+  kx.fillStyle = g;
+  kx.beginPath(); kx.arc(x, y, r, 0, Math.PI * 2); kx.fill();
+}
+function along(pts, f) {
+  const i = Math.max(0, Math.min(pts.length - 1.001, f * (pts.length - 1)));
+  const j = Math.floor(i), u = i - j, a = pts[j], b = pts[j + 1] || a;
+  return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+}
+function spark(s, speed) { sparks.push({ s, t: 0, sp: speed || 0.007 + Math.random() * 0.012, back: !speed && Math.random() < 0.5 }); }
+function fire(n) {
+  n.ex = 0.35;
+  if (n.syn) spark(n.syn, 0.018);
+  chime(Math.floor((n.x / lungW) * 8));
+}
+/* a pulse that starts at the vessel under the pointer and climbs to the airway */
+function traceFrom(seg) {
+  const pts = [];
+  for (let s = seg; s; s = s.parent) {
+    const q = sampleQuad(s.ex, s.ey, s.qx, s.qy, s.x, s.y, 5);
+    if (pts.length) q.shift();
+    pts.push(...q);
+  }
+  traces.push({ pts, t: 0, c: seg.c });
+  if (traces.length > 8) traces.shift();
+}
+function showFooterHint() {
+  if (reduceMotion) return;
+  footerHint.classList.add("on");
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => footerHint.classList.remove("on"), 7000);
+}
+function hideFooterHint() { clearTimeout(hintTimer); footerHint.classList.remove("on"); }
+function startSparks() { if (!footerRaf && footerSeen && lungGrown && !reduceMotion) footerRaf = requestAnimationFrame(footerLoop); }
+function footerLoop(now) {
+  footerRaf = 0;
+  kx.clearRect(0, 0, lungW, lungH);
+  if (!footerSeen) { sparks = []; traces = []; ripples = []; return; }
+  if (synapses.length && now > nextSpark) {
+    spark(synapses[Math.floor(Math.random() * synapses.length)]);
+    nextSpark = now + 450 + Math.random() * 1500;
+  }
+  /* nerve cells near the pointer warm up, then fire */
+  if (fPointer) for (const n of neurons) {
+    const d = Math.hypot(n.x - fPointer.x, n.y - fPointer.y);
+    if (d < 90) { n.ex = (n.ex || 0) + 0.045 * (1 - d / 90); if (n.ex >= 1) fire(n); }
+  }
+  for (const n of neurons) if (n.ex > 0.02) { glow(n.x, n.y, n.r * 7, n.c, 0.42 * Math.min(1, n.ex)); n.ex *= 0.975; }
+  /* signal rings from a click or tap */
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const rp = ripples[i];
+    rp.r += 5;
+    if (rp.r > rp.max) { ripples.splice(i, 1); continue; }
+    const fade = 1 - rp.r / rp.max;
+    kx.lineWidth = 1.2;
+    kx.strokeStyle = tint(2, 0.3 * fade);
+    kx.beginPath(); kx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); kx.stroke();
+    kx.strokeStyle = tint(1, 0.16 * fade);
+    kx.beginPath(); kx.arc(rp.x, rp.y, Math.max(0, rp.r - 9), 0, Math.PI * 2); kx.stroke();
+    for (const s of synapses) {
+      if (rp.hit.has(s)) continue;
+      if (Math.hypot(s.pts[0][0] - rp.x, s.pts[0][1] - rp.y) < rp.r) { rp.hit.add(s); spark(s, 0.022); }
+    }
+    for (const n of neurons) {
+      if (rp.hit.has(n)) continue;
+      if (Math.hypot(n.x - rp.x, n.y - rp.y) < rp.r) { rp.hit.add(n); n.ex = 1; }
+    }
+  }
+  /* pulses climbing the vessels, each with a fading tail */
+  kx.lineCap = "round";
+  for (let i = traces.length - 1; i >= 0; i--) {
+    const tr = traces[i], L = tr.pts.length - 1;
+    tr.t += 1.6 / L;
+    if (tr.t >= 1.2) { traces.splice(i, 1); continue; }
+    const head = Math.min(L, tr.t * L);
+    const out = tr.t > 1 ? 1 - (tr.t - 1) / 0.2 : 1;
+    for (let k = 0; k < 18; k++) {
+      const a = head - k, b = a - 1;
+      if (b < 0) break;
+      const p = along(tr.pts, a / L), q = along(tr.pts, b / L);
+      kx.strokeStyle = tint(tr.c, 0.5 * (1 - k / 18) * out);
+      kx.lineWidth = Math.max(0.4, 1.7 - k * 0.07);
+      kx.beginPath(); kx.moveTo(p[0], p[1]); kx.lineTo(q[0], q[1]); kx.stroke();
+    }
+    if (tr.t <= 1) { const p = along(tr.pts, tr.t); glow(p[0], p[1], 8, tr.c, 0.45); }
+  }
+  /* sparks crossing synapses */
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const k = sparks[i];
+    k.t += k.sp;
+    if (k.t >= 1) { sparks.splice(i, 1); continue; }
+    const [x, y] = along(k.s.pts, k.back ? 1 - k.t : k.t);
+    glow(x, y, 7, k.s.c, 0.55 * Math.sin(k.t * Math.PI));
+  }
+  footerRaf = requestAnimationFrame(footerLoop);
+}
+footerEl.addEventListener("pointermove", e => {
+  if (!lungGrown || reduceMotion) return;
+  fPointer = toFooter(e);
+  const now = performance.now();
+  if (now - lastTraceAt > 200) {
+    let best = null, bd = 18;
+    for (const s of lungSegs) {
+      if (!s.vessel) continue;
+      const d = Math.hypot(s.qx - fPointer.x, s.qy - fPointer.y);
+      if (d < bd) { bd = d; best = s; }
+    }
+    if (best && best !== lastTraceSeg) { traceFrom(best); lastTraceSeg = best; lastTraceAt = now; }
+  }
+  if (e.pointerType === "mouse" && Math.abs(e.movementX) + Math.abs(e.movementY) > 0) hideFooterHint();
+}, { passive: true });
+footerEl.addEventListener("pointerleave", () => { fPointer = null; });
+footerEl.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") fPointer = null; });
+footerEl.addEventListener("pointercancel", () => { fPointer = null; });
+footerEl.addEventListener("click", e => {
+  if (!lungGrown || reduceMotion) return;
+  const p = toFooter(e);
+  ripples.push({ x: p.x, y: p.y, r: 0, max: Math.hypot(lungW, lungH) * 0.65, hit: new Set() });
+  chime(5 + Math.floor(Math.random() * 4), true);
+  hideFooterHint();
+});
+/* it grows once the footer is properly in view, not as it first peeks in */
+new IntersectionObserver(entries => {
+  const e = entries[entries.length - 1];
+  footerSeen = e.isIntersecting;
+  if (e.intersectionRatio >= 0.6) growLungs();
+  if (footerSeen) startSparks();
+}, { threshold: [0, 0.6] }).observe(footerEl);
+
+/* ---------------- about: the footer's veins climb into the biography ----------------
+   Same seeded, branching cyan/magenta/chartreuse anatomy as the footer.
+   The central trunks meet exactly at the section boundary. The effect lives
+   behind the writing and never intercepts pointer interactions. */
+const aboutNeural = document.getElementById("about-neural");
+const aboutCtx = aboutNeural.getContext("2d");
+let aboutSegments = [], aboutW = 0, aboutH = 0, aboutVisible = false;
+let aboutStart = 0, aboutFrame = 0, aboutFinished = false;
+function buildAboutNeural() {
+  const rect = aboutNeural.getBoundingClientRect();
+  aboutW = Math.max(1, rect.width); aboutH = Math.max(1, rect.height);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  aboutNeural.width = Math.round(aboutW * dpr);
+  aboutNeural.height = Math.round(aboutH * dpr);
+  aboutCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  aboutSegments = [];
+  const rand = mulberry32(737);
+  const scale = Math.min(1.2, Math.max(.7, aboutW / 1000));
+  const travel = Math.min(aboutH * .15, 130);
+  const limit = aboutW < 700 ? 7 : 9;
+  function twig(x, y, angle, length, width, depth, color) {
+    const ex = x + Math.cos(angle) * length;
+    const ey = y + Math.sin(angle) * length;
+    const bend = (rand() - .5) * length * .3;
+    const qx = (x + ex) / 2 + Math.cos(angle + Math.PI / 2) * bend;
+    const qy = (y + ey) / 2 + Math.sin(angle + Math.PI / 2) * bend;
+    const alpha = (depth < 2 ? .31 : .23) * (.55 + rand() * .45) * Math.max(.3, 1 - depth * .075);
+    aboutSegments.push({ x, y, qx, qy, ex, ey, width: Math.max(.3, width), color, alpha, depth });
+    if (depth >= limit || length < 5 || ey < -55) return;
+    const spread = .25 + rand() * .34;
+    const shrink = .73 + rand() * .11;
+    twig(ex, ey, angle - spread, length * shrink, width * .71, depth + 1, color);
+    twig(ex, ey, angle + spread, length * (shrink - .035), width * .69, depth + 1, color);
+  }
+  // Align both trunks to the two main footer vessels at its upper edge.
+  [[2, 0], [1, 2.8 * scale]].forEach(([color, offset]) => {
+    const x = aboutW / 2 + offset;
+    aboutSegments.push({x, y: aboutH + 2, qx:x, qy:aboutH - travel*.55, ex:x, ey:aboutH-travel,
+      width:3.4*scale, color, alpha:.24, depth:0});
+    twig(x, aboutH-travel, -Math.PI/2-.53, travel*.85, 3*scale, 1, color);
+    twig(x, aboutH-travel, -Math.PI/2+.53, travel*.85, 3*scale, 1, color);
+    twig(x, aboutH-travel, -Math.PI/2, travel*1.05, 2.1*scale, 1, color);
+  });
+  // Sparse lateral capillaries echo the footer corner trees.
+  [[.07, 2], [.93, 1]].forEach(([fx, color]) => {
+    twig(aboutW*fx, aboutH+5, -Math.PI/2 + (fx < .5 ? .28 : -.28), travel*.7, 1.8*scale, 2, color);
+  });
+  aboutSegments.sort((a,b) => b.y - a.y);
+  paintAboutNeural(reduceMotion ? Infinity : (aboutFinished ? Infinity : 0));
+}
+function paintAboutNeural(progress, now = 0) {
+  const g=aboutCtx, w=aboutW, h=aboutH;
+  g.clearRect(0,0,w,h);
+  g.lineCap='round';
+  // Growth proceeds from the footer boundary upward into the about area.
+  const front = progress === Infinity ? -Infinity : h - progress * (h + 90);
+  aboutSegments.forEach((s, i) => {
+    if (Math.max(s.y,s.ey) < front) return;
+    g.strokeStyle = tint(s.color, s.alpha);
+    g.lineWidth = s.width;
+    g.beginPath(); g.moveTo(s.x,s.y); g.quadraticCurveTo(s.qx,s.qy,s.ex,s.ey); g.stroke();
+    if (progress === Infinity && !reduceMotion && i % 87 === 0) {
+      const t = (now*.00016 + i*.023) % 1, u = 1-t;
+      const x = u*u*s.x + 2*u*t*s.qx + t*t*s.ex;
+      const y = u*u*s.y + 2*u*t*s.qy + t*t*s.ey;
+      const halo = g.createRadialGradient(x,y,0,x,y,5);
+      halo.addColorStop(0,tint(s.color,.37));halo.addColorStop(1,tint(s.color,0));
+      g.fillStyle=halo;g.beginPath();g.arc(x,y,5,0,Math.PI*2);g.fill();
+    }
+  });
+}
+function aboutNeuralLoop(now) {
+  aboutFrame=0;
+  if (!aboutVisible || document.hidden) return;
+  if (!aboutStart) aboutStart=now;
+  const progress=Math.min(1,(now-aboutStart)/4400);
+  aboutFinished=progress===1;
+  paintAboutNeural(aboutFinished ? Infinity : 1-Math.pow(1-progress,2),now);
+  aboutFrame=requestAnimationFrame(aboutNeuralLoop);
+}
+const aboutObserver=new IntersectionObserver(entries => {
+  aboutVisible=entries[entries.length-1].isIntersecting;
+  if (aboutVisible && !reduceMotion && !aboutFrame) aboutFrame=requestAnimationFrame(aboutNeuralLoop);
+}, {threshold:0});
+aboutObserver.observe(document.getElementById('about'));
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && aboutVisible && !reduceMotion && !aboutFrame)
+    aboutFrame=requestAnimationFrame(aboutNeuralLoop);
+});
+
+/* ---------------- sound ----------------
+   Off until the visitor turns it on. Everything is synthesized in the browser
+   (no audio files): a low, slowly breathing drone, and a soft glass note each
+   time a new painting comes to the front. */
+const soundBtn = document.getElementById("sound");
+let snd = null, soundOn = false, lastChimeT = 0;
+function makeSound() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  const ctx = new AC();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass"; filter.frequency.value = 520; filter.Q.value = 0.7;
+  filter.connect(master);
+  const lfo = ctx.createOscillator(), lfoAmt = ctx.createGain();
+  lfo.frequency.value = 0.045; lfoAmt.gain.value = 260;
+  lfo.connect(lfoAmt).connect(filter.frequency); lfo.start();
+  [[55, "sine", 0.26], [82.41, "triangle", 0.08], [110.3, "sine", 0.1], [164.8, "sine", 0.03]].forEach(([f, type, g]) => {
+    const o = ctx.createOscillator(), og = ctx.createGain();
+    o.type = type; o.frequency.value = f; og.gain.value = g;
+    const wob = ctx.createOscillator(), wobAmt = ctx.createGain();
+    wob.frequency.value = 0.03 + Math.random() * 0.05; wobAmt.gain.value = g * 0.45;
+    wob.connect(wobAmt).connect(og.gain); wob.start();
+    o.connect(og).connect(filter); o.start();
+  });
+  return { ctx, master };
+}
+const SCALE = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22]; /* minor pentatonic above A3 */
+function chime(i, big) {
+  if (!soundOn || !snd) return;
+  const { ctx, master } = snd;
+  const t = ctx.currentTime;
+  if (!big && t - lastChimeT < 0.14) return; /* a fast spin doesn't become a hailstorm */
+  lastChimeT = t;
+  const f = 220 * Math.pow(2, SCALE[i % SCALE.length] / 12);
+  [1, 2.01, big ? 3.02 : 0].forEach((m, k) => {
+    if (!m) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine"; o.frequency.value = f * m;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime((big ? 0.5 : 0.28) / (k + 1), t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (big ? 3.2 : 1.6));
+    o.connect(g).connect(master);
+    o.start(t); o.stop(t + 3.4);
+  });
+}
+soundBtn.addEventListener("click", async () => {
+  if (!snd) snd = makeSound();
+  if (!snd) return;
+  soundOn = !soundOn;
+  const { ctx, master } = snd;
+  if (soundOn) await ctx.resume();
+  const t = ctx.currentTime;
+  master.gain.cancelScheduledValues(t);
+  master.gain.setValueAtTime(master.gain.value, t);
+  master.gain.linearRampToValueAtTime(soundOn ? 0.14 : 0, t + (soundOn ? 2.5 : 0.6));
+  if (!soundOn) setTimeout(() => { if (!soundOn) ctx.suspend(); }, 700);
+  soundBtn.setAttribute("aria-pressed", String(soundOn));
+  soundBtn.querySelector(".sound-label").textContent = soundOn ? "Sound on" : "Sound off";
+});
+document.addEventListener("visibilitychange", () => {
+  if (!snd || !soundOn) return;
+  if (document.hidden) snd.ctx.suspend(); else snd.ctx.resume();
+});
+
+/* ---------------- a small surprise ----------------
+   Fling the ring hard and the organism notices: veins burst out from the
+   center, the ring flares, and a line is whispered. Rests 15 seconds between. */
+const WHISPERS = ["you woke something up", "the veins remember you", "something on the other side waved back"];
+let lastSurprise = -Infinity, whisperN = 0, whisperTimer = 0;
+function surprise() {
+  const now = performance.now();
+  if (reduceMotion || now - lastSurprise < 15000) return;
+  lastSurprise = now;
+  const r = ring.getBoundingClientRect();
+  const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+  for (let k = 0; k < 28; k++) {
+    hyphae.push({ x: ox, y: oy, a: (k / 28) * Math.PI * 2 + Math.random() * 0.2, life: 200 + Math.random() * 220, gen: 1, c: k % 3 });
+  }
+  for (let k = 0; k < 60; k++) spore(ox + (Math.random() - 0.5) * r.width * 1.6, oy + (Math.random() - 0.5) * r.height, k % 3);
+  stage.classList.remove("woke"); void stage.offsetWidth; stage.classList.add("woke");
+  const w = document.getElementById("whisper");
+  w.textContent = WHISPERS[whisperN++ % WHISPERS.length];
+  w.classList.add("on");
+  clearTimeout(whisperTimer);
+  whisperTimer = setTimeout(() => w.classList.remove("on"), 4200);
+  chime(4, true);
+}
+
+
+/* ---------------- miniature neural network: main collection ----------------
+   A restrained, self-drawing counterpart to the footer's nerves. Individual
+   dendrites grow outward from a cell body, with tiny synaptic crossings and
+   occasional signals. It never captures input or competes with the artwork. */
+const heroN = document.getElementById("hero-neuron");
+const heroNCtx = heroN.getContext("2d");
+let heroBranches = [], heroSynapses = [], heroStart = 0, heroFrame = 0;
+function buildHeroNeuron() {
+  const rect = heroN.getBoundingClientRect();
+  const w = rect.width, h = rect.height;
+  if (!w || !h) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  heroN.width = Math.round(w * dpr);
+  heroN.height = Math.round(h * dpr);
+  heroNCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  heroBranches = []; heroSynapses = [];
+  const rand = mulberry32(81274), cx0 = w * .5, cy0 = h * .5;
+  const scale = w / 210;
+  function grow(x, y, angle, len, depth, color, parentStart) {
+    const ex = x + Math.cos(angle) * len, ey = y + Math.sin(angle) * len;
+    const bend = (rand() - .5) * len * .5;
+    const qx = (x + ex) / 2 - Math.sin(angle) * bend;
+    const qy = (y + ey) / 2 + Math.cos(angle) * bend;
+    const seg = {x,y,qx,qy,ex,ey,depth,color,start:parentStart, width: Math.max(.35, (2.0-depth*.28)*scale), alpha:(.31-depth*.027)*(.65+rand()*.35)};
+    heroBranches.push(seg);
+    if (depth >= 6 || len < 3 * scale) {
+      if (rand() < .65) heroSynapses.push({x:ex,y:ey,color,at:parentStart+1});
+      return;
+    }
+    const next = len * (.68+rand()*.12);
+    grow(ex,ey,angle-(.24+rand()*.52),next,depth+1,color,parentStart+1);
+    if (depth < 5 || rand() > .18) grow(ex,ey,angle+(.24+rand()*.52),next*(.88+rand()*.14),depth+1,color,parentStart+1);
+  }
+  for (let i=0;i<7;i++) {
+    const angle = i * Math.PI*2/7 - .35;
+    grow(cx0,cy0,angle,(20+rand()*9)*scale,0,i%3,0);
+  }
+}
+function paintHeroNeuron(now) {
+  const ctx = heroNCtx, w = heroN.clientWidth, h = heroN.clientHeight;
+  if (!w || !h) return;
+  ctx.clearRect(0,0,w,h);
+  const elapsed = reduceMotion ? 9999 : Math.max(0, now - heroStart);
+  const progress = Math.min(1, elapsed / 3200);
+  const front = progress * 8;
+  const x = w*.5, y = h*.5, scale = w/210;
+  ctx.lineCap = "round";
+  heroBranches.forEach(s => {
+    const portion = Math.max(0, Math.min(1, front - s.start));
+    if (!portion) return;
+    ctx.strokeStyle = tint(s.color,s.alpha);
+    ctx.lineWidth = s.width;
+    ctx.beginPath();
+    ctx.moveTo(s.x,s.y);
+    if (portion === 1) ctx.quadraticCurveTo(s.qx,s.qy,s.ex,s.ey);
+    else {
+      const qx = s.x+(s.qx-s.x)*portion, qy=s.y+(s.qy-s.y)*portion;
+      const ex=(1-portion)*(1-portion)*s.x+2*(1-portion)*portion*s.qx+portion*portion*s.ex;
+      const ey=(1-portion)*(1-portion)*s.y+2*(1-portion)*portion*s.qy+portion*portion*s.ey;
+      ctx.quadraticCurveTo(qx,qy,ex,ey);
+    }
+    ctx.stroke();
+  });
+  // The nucleus and terminal boutons belong to the same translucent palette.
+  const nucleus = ctx.createRadialGradient(x,y,0,x,y,9*scale);
+  nucleus.addColorStop(0,tint(2,.45));
+  nucleus.addColorStop(.45,tint(1,.20));
+  nucleus.addColorStop(1,tint(2,0));
+  ctx.fillStyle=nucleus; ctx.beginPath();ctx.arc(x,y,9*scale,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(236,230,220,.45)";
+  ctx.beginPath();ctx.arc(x,y,1.3*scale,0,Math.PI*2);ctx.fill();
+  heroSynapses.forEach((s,i) => {
+    if (front < s.at) return;
+    ctx.fillStyle=tint(s.color,.22);
+    ctx.beginPath();ctx.arc(s.x,s.y,.8*scale,0,Math.PI*2);ctx.fill();
+  });
+  // A few travelling signals provide life without a constant flashing field.
+  if (!reduceMotion && progress === 1) {
+    const t = (elapsed-3200)/1000;
+    [2,13,27,46].forEach((idx,j) => {
+      const s = heroBranches[idx]; if (!s) return;
+      const phase = (t*.15+j*.26)%1;
+      const u=phase, v=1-u;
+      const px=v*v*s.x+2*v*u*s.qx+u*u*s.ex;
+      const py=v*v*s.y+2*v*u*s.qy+u*u*s.ey;
+      const glow=ctx.createRadialGradient(px,py,0,px,py,4*scale);
+      glow.addColorStop(0,tint(s.color,.65));glow.addColorStop(1,tint(s.color,0));
+      ctx.fillStyle=glow;ctx.beginPath();ctx.arc(px,py,4*scale,0,Math.PI*2);ctx.fill();
+    });
+  }
+}
+function heroNeuronLoop(now) {
+  heroFrame=0;
+  if (document.hidden) return;
+  paintHeroNeuron(now);
+  if (!reduceMotion) heroFrame=requestAnimationFrame(heroNeuronLoop);
+}
+function startHeroNeuron() {
+  buildHeroNeuron();
+  heroStart=performance.now();
+  if (heroFrame) cancelAnimationFrame(heroFrame);
+  if (reduceMotion) paintHeroNeuron(heroStart);
+  else heroFrame=requestAnimationFrame(heroNeuronLoop);
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && !heroFrame && !reduceMotion) heroFrame=requestAnimationFrame(heroNeuronLoop);
+});
+
+/* ---------------- start ---------------- */
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { layout(); resizeField(); buildLungs(); buildAboutNeural(); buildHeroNeuron(); paintHeroNeuron(performance.now()); if (reduceMotion) for (let i = 0; i < 900; i++) growStep(); }, 150);
+});
+buildLungs();
+buildAboutNeural();
+startHeroNeuron();
+layout();
+resizeField();
+if (reduceMotion) {
+  for (let i = 0; i < 900; i++) growStep(); /* a still, pre-grown field with resting pixels */
+  drawMotes();
+} else {
+  requestAnimationFrame(fieldLoop);
+}
+requestAnimationFrame(tick);
+
+/* arriving from a painting's link opens it straight away */
+const linked = workFromHash();
+if (linked >= 0) {
+  rot = target = -linked * STEP;
+  openExam(linked, true);
+}
+const vLinked = vaultFromHash();
+if (vLinked >= 0) openVault(vLinked, true);
+
+/* first visit: the ring turns a little on its own and comes back, so it's clear it moves */
+if (!coach.turned && !reduceMotion && linked < 0 && vLinked < 0) {
+  setTimeout(() => {
+    if (coach.turned || dragging) return;
+    target -= STEP * 0.6;
+    setTimeout(() => { if (!coach.turned && !dragging) target += STEP * 0.6; }, 700);
+  }, 1400);
+}
+</script>
+</body>
+</html>
